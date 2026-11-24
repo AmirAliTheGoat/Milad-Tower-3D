@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Milad Tower 3D — 435-Meter Archival Exhibition</title>
+    <meta
+      name="description"
+      content="Explore Tehran's 435-meter Milad Tower (Borj-e Milad) in 3D, tracing its verified 1997–2008 engineering timeline, structural architecture, and Alborz Mountains setting in English and Persian."
+    />
+    <meta property="og:title" content="Milad Tower 3D — 435-Meter Archival Exhibition" />
+    <meta
+      property="og:description"
+      content="Interactive 3D architectural exhibition of Tehran's 435-meter Milad Tower (1997–2008) with verified engineering milestones in English and Persian."
+    />
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@400;500;600&family=Vazirmatn:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./story_and_archive/story_archive.css" />
+    <style>
+      #boot-veil {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background-color: #121212;
+        color: #f5f5f5;
+        transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      #boot-veil.is-fading {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .boot-veil-eyebrow {
+        font-family: var(--font-sans);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #a3a3a3;
+      }
+      .boot-veil-title {
+        font-family: var(--font-serif);
+        font-size: clamp(20px, 2.6vw, 28px);
+        font-weight: 400;
+        letter-spacing: 0.06em;
+        color: #f5f5f5;
+      }
+      .boot-veil-rule {
+        width: 48px;
+        height: 1px;
+        background-color: #737373;
+        margin-top: 4px;
+      }
+      #museum-brand-plaque {
+        position: fixed;
+        top: 20px;
+        left: 24px;
+        z-index: 18;
+      }
+      html[dir="rtl"] #museum-brand-plaque {
+        left: auto;
+        right: 24px;
+        text-align: right;
+      }
+      html[dir="rtl"] #museum-header {
+        right: auto;
+        left: 24px;
+      }
+      html[dir="rtl"] .m2-landing-intro {
+        left: auto;
+        right: 32px;
+        text-align: right;
+        align-items: flex-end;
+      }
+      html[dir="rtl"] .m2-placard,
+      html[dir="rtl"] .m2-landing-intro,
+      html[dir="rtl"] #museum-brand-plaque,
+      html[dir="rtl"] #exhibition-walkthrough-bar {
+        font-family: "Vazirmatn", var(--font-sans);
+      }
+      html[dir="rtl"] .m2-brand-title,
+      html[dir="rtl"] .m2-landing-title,
+      html[dir="rtl"] .m2-placard-headline,
+      html[dir="rtl"] .boot-veil-title {
+        font-family: "Vazirmatn", var(--font-serif);
+        letter-spacing: 0;
+        text-transform: none;
+      }
+      html[dir="rtl"] .m2-brand-subtitle,
+      html[dir="rtl"] .m2-landing-eyebrow,
+      html[dir="rtl"] .m2-placard-date,
+      html[dir="rtl"] .m2-placard-elevation,
+      html[dir="rtl"] .boot-veil-eyebrow {
+        letter-spacing: 0;
+        text-transform: none;
+      }
+      @media (max-width: 720px) {
+        #museum-brand-plaque {
+          display: none;
+        }
+      }
+      @media (max-width: 600px) {
+        .m2-placard {
+          bottom: 94px !important;
+          max-height: 56vh;
+          max-height: min(56vh, calc(100dvh - 156px));
+          overflow-y: auto;
+          padding: 10px 12px 11px;
+        }
+        .m2-placard.is-collapsed {
+          max-height: none;
+          overflow-y: visible;
+          padding: 9px 12px 10px;
+        }
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./vendor/three/three.module.js",
+          "three/addons/": "./vendor/three/addons/",
+          "museum/": "./"
+        }
+      }
+    </script>
+    <link rel="modulepreload" href="./startup_orchestrator.js" />
+    <link rel="modulepreload" href="./pbr_worker.js" />
+    <link rel="modulepreload" href="./app.js" />
+    <link rel="modulepreload" href="./vendor/three/three.module.js" />
+    <link rel="modulepreload" href="./vendor/three/three.core.js" />
+    <link rel="modulepreload" href="./vendor/three/addons/controls/OrbitControls.js" />
+    <link rel="modulepreload" href="./model/tower_controller.js" />
+    <link rel="modulepreload" href="./model/materials.js" />
+    <link rel="modulepreload" href="./model/floor_textures.js" />
+    <link rel="modulepreload" href="./world/paris_1889.js" />
+    <link rel="modulepreload" href="./world/atmosphere.js" />
+    <link rel="modulepreload" href="./portals/photo_portals.js" />
+    <link rel="modulepreload" href="./perf/fps_and_drawcalls/index.js" />
+    <link
+      rel="preload"
+      as="image"
+      fetchpriority="high"
+      href="./src/assets/images/milad_elevation_blueprint_1795459743280.jpg"
+    />
+  </head>
+  <body>
+    <main id="stage-viewport" aria-label="Milad Tower 435-Meter 1997–2008 Exhibition Stage">
+      <canvas id="world-canvas"></canvas>
+      <div id="portal-overlay-root" aria-hidden="true"></div>
+      <div id="vignette-layer" aria-hidden="true"></div>
+    </main>
+
+    <div id="museum-ui-root">
+      <div id="museum-brand-plaque" class="m2-brand-mark" aria-hidden="true">
+        <span class="m2-brand-title" id="brand-plaque-title">Milad Tower · 435 m</span>
+        <span class="m2-brand-subtitle" id="brand-plaque-sub">1997–2008 Archival Exhibition</span>
+      </div>
+    </div>
+
+    <div id="boot-veil" role="status" aria-live="polite">
+      <span class="boot-veil-eyebrow">Tehran · Gisha Hilltop · 1997–2008</span>
+      <span class="boot-veil-title">Milad Tower</span>
+      <span class="boot-veil-rule" aria-hidden="true"></span>
+    </div>
+
+    <script type="module" async src="./startup_orchestrator.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
