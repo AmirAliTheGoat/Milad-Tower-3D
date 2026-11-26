@@ -77,9 +77,6 @@ export const TOWER_HERO_PBR_PALETTE = Object.freeze({
   copperDome: { hex: '#6a6f65', threeHex: 0x6a6f65, roughness: 0.46, metalness: 0.45 },
   goldAccent: { hex: '#9a8262', threeHex: 0x9a8262, roughness: 0.42, metalness: 0.62 },
   elevatorCabinRed: { hex: '#5e3d31', threeHex: 0x5e3d31, roughness: 0.52, metalness: 0.18 },
-  flagNavyMuted: { hex: '#2f3b46', threeHex: 0x2f3b46, roughness: 0.82, metalness: 0.00 },
-  flagWhiteMuted: { hex: '#eae5dc', threeHex: 0xeae5dc, roughness: 0.82, metalness: 0.00 },
-  flagRedMuted: { hex: '#7d3d33', threeHex: 0x7d3d33, roughness: 0.82, metalness: 0.00 },
 });
 
 export const PARIS_SKETCH_FOG_PALETTE = Object.freeze({
@@ -98,7 +95,6 @@ export const PARIS_SKETCH_FOG_PALETTE = Object.freeze({
   parisMassingRoofSlateHex: '#807c75',
   parisSketchEdgeInkHex: '#383531',
   parisDistantSilhouetteInkHex: '#7a756d',
-  seineWaterCollodionHex: '#b7b4ae',
   fountainBasinWaterHex: '#aba8a1',
 });
 

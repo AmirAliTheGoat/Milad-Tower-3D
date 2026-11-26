@@ -1,15 +1,13 @@
 /**
- * Physically Grounded Eiffel Tower Construction & Ambient Kinematics Controller
+ * Physically Grounded Milad Tower Construction & Ambient Kinematics Controller
  * (`model/tower_controller.js`)
  *
- *   - Loads all 5 procedural Eiffel zones (`159` total pieces; `148` permanent pieces,
- *     `627` meshes, `3,176,054` triangles at `step = 11.0`).
- *   - Drives zone geometry construction via `BuildKinematicsEngine` (caisson pneumatic sinking, stepped
- *     masonry courses, 54.6° inclined shoe hydraulic seating, battered derrick/creeper hoists with
- *     damped pendulum sway & live 3D hoist cables, `boîte à sable` platform girder bleed, 74m arch
- *     cantilever closure, and top-down falsework dismantling).
- *   - Guarantees `0.000 m` origin/floor plunge across `[0.0 .. 11.0]` and exact canonical resting
- *     geometry at all 8 calibrated PnP steps (`0.55, 1.50, 3.55, 3.60, 4.85, 5.66, 6.52, 11.0`).
+ *   - Loads all 5 procedural Milad Tower zones (1997–2008 engineering sequence:
+ *     excavation & mat foundation, 8-lobed slip-form concrete shaft, 12-story steel head pod,
+ *     faceted Sky Dome & 120 m antenna mast, and temporary site/head cranes & panoramic lifts).
+ *   - Drives zone geometry construction via `BuildKinematicsEngine` and per-zone kinematics.
+ *   - Guarantees `0.000 m` origin plunge across `[0.0 .. 11.0]` and exact canonical resting
+ *     geometry at all calibrated walkthrough steps.
  *   - Enforces strict `0` emissive / `0` `emissiveMap` compliance across all Tower materials,
  *     automatically enables `renderer.localClippingEnabled = true`, and flags `shadowMap.needsUpdate`
  *     only when construction geometry changes.
@@ -133,7 +131,6 @@ export class TowerModelController {
     this.initialized = false;
 
     this._initPromise = null;
-    this._opticGroup = null;
     this._cutawayPortalId = null;
     this._elapsedSec = 0.0;
     this._shadowsDirty = true;
@@ -199,7 +196,7 @@ export class TowerModelController {
 
     this.materials = this.providedMaterials || createMaterials(THREE);
     this.rootGroup = new THREE.Group();
-    this.rootGroup.name = 'eiffel_tower_1889';
+    this.rootGroup.name = 'milad_tower';
     if (this.scene) {
       this.scene.add(this.rootGroup);
       this._installSceneRenderHook();
@@ -311,17 +308,20 @@ export class TowerModelController {
   }
 
   _sanitizeMaterialsAndShadows() {
-    this._opticGroup = null;
     if (!this.rootGroup) return;
 
     this.rootGroup.traverse((obj) => {
-      if (obj.name === 'z4_fresnel_optic') {
-        this._opticGroup = obj;
-      }
       if (!obj.material) return;
       const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
       if (obj.isMesh) {
-        const isGlass = mats.some((m) => m && (m.transparent || m.name === 'glass1889'));
+        const isGlass = mats.some(
+          (m) =>
+            m &&
+            (m.transparent ||
+              m.name === 'miladTurquoiseGlass' ||
+              m.name === 'miladSkyDomeGlass' ||
+              m.name === 'glass1889')
+        );
         obj.castShadow = !isGlass;
         obj.receiveShadow = true;
       }

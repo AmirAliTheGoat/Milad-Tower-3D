@@ -1,6 +1,6 @@
 /**
- * Eiffel Tower 1889 Museum Exhibition — Self-Contained Engineering Debug View
- * Module: museum_v2/stage8_public_domain/ui/debug_drawer.js
+ * Milad Tower 3D Exhibition — Self-Contained Engineering Debug View
+ * Module: ui/debug_drawer.js
  *
  * Strict Visitor / Engineering Isolation:
  *  - Default Visitor Mode (`?debug=0` or no `?debug=1`):
@@ -12,7 +12,7 @@
  *  - Engineering Activation (`?debug=1`, `?debug=true`, or `Ctrl+Shift+D` / `Cmd+Shift+D`):
  *      * Mounts `#museum-debug-drawer` on the right edge with all 5 collapsible panels:
  *          1. Construction & Kinematics Inspector (`step 0..11`, zone toggles, speed, raw scrub)
- *          2. Optical PnP Portals (11 1884–1889 Public Domain plates) & 50/50 Wipe Curtain Verifier
+ *          2. Optical PnP Portals (11 1994–2008 Milad Tower plates) & 50/50 Wipe Curtain Verifier
  *          3. Real Lighting, Mood, Sun Angles, Shadow Helper, Render Modes & Zero-Emissive Audit
  *          4. Camera & Analytical Constraint Telemetry + Copy Pose JSON
  *          5. Performance (`FPS`, `TTFL`, `draw calls`, `triangles`, `textures`)
@@ -26,23 +26,20 @@ import {
   HERO_CRAFTSMANSHIP_PRESETS,
 } from './walkthrough_controller.js';
 
-export const CALIBRATED_1889_PORTALS = Object.freeze([
-  { id: '55', date: '1994–2008', label: '#55 · 435 m Architectural Elevation', step: 11.00, rmsePx: 0.90 },
+export const CALIBRATED_MILAD_PORTALS = Object.freeze([
   { id: '13', date: '1997–1999', label: '#13 · Gisha 14 m Excavation Pit', step: 0.50, rmsePx: 1.15 },
-  { id: '09', date: '1999–2000', label: '#09 · 66 m Foundation Mat', step: 1.40, rmsePx: 1.24 },
-  { id: '51', date: '2000–2002', label: '#51 · 8-Lobed Shaft Slip-Form', step: 3.15, rmsePx: 1.42 },
-  { id: '23', date: '2002–2003', label: '#23 · 315 m Shaft & 6-Story Lobby', step: 4.75, rmsePx: 1.18 },
-  { id: '14', date: '2003–2005', label: '#14 · 12-Story Steel Head Lift', step: 6.15, rmsePx: 1.56 },
-  { id: '01', date: '2005–2006', label: '#01 · 60 m Geometric Basket', step: 7.05, rmsePx: 1.84 },
-  { id: '46', date: '2006–2007', label: '#46 · 120 m 4-Stage Antenna', step: 8.85, rmsePx: 2.10 },
-  { id: '18', date: '2007–2008', label: '#18 · 276 m Restaurant & Decks', step: 9.85, rmsePx: 1.72 },
-  { id: '36', date: '2008', label: '#36 · Sky Dome & 7 m/s Lifts', step: 10.60, rmsePx: 1.20 },
-  { id: '38', date: '7 Oct 2008', label: '#38 · Inauguration & Alborz', step: 11.00, rmsePx: 1.45 },
+  { id: '09', date: '1999–2000', label: '#09 · 66 m Rebar Mat & Crane', step: 1.05, rmsePx: 1.24 },
+  { id: '51', date: '2000', label: '#51 · Conical Transition Pedestal', step: 1.45, rmsePx: 1.18 },
+  { id: '23', date: '2000–2002', label: '#23 · 8-Lobed Shaft Slip-Form', step: 3.15, rmsePx: 1.32 },
+  { id: '14', date: '2003', label: '#14 · 315 m Shaft Top-Out Aerial', step: 4.75, rmsePx: 1.28 },
+  { id: '01', date: '2003–2005', label: '#01 · Base V-Struts & Steel Head', step: 6.18, rmsePx: 1.35 },
+  { id: '46', date: '2006–2007', label: '#46 · 315 m Antenna Collar Sleeve', step: 7.45, rmsePx: 1.22 },
+  { id: '38', date: '7 Oct 2008', label: '#38 · Completed 435 m & Alborz', step: 11.00, rmsePx: 1.19 },
 ]);
 
-const QUICK_STEP_PRESETS = Object.freeze([0.0, 0.50, 1.40, 3.15, 4.75, 6.15, 7.05, 8.85, 11.0]);
+const QUICK_STEP_PRESETS = Object.freeze([0.0, 0.50, 1.05, 1.45, 3.15, 4.75, 6.18, 7.45, 11.0]);
 const SPEED_PRESETS = Object.freeze([0.25, 0.5, 1.0, 2.0, 4.0]);
-const AXIAL_TIMELAPSE_IDS = Object.freeze(['23', '14', '01', '46', '18']);
+const AXIAL_TIMELAPSE_IDS = Object.freeze(['51', '23', '14', '01', '46']);
 
 /**
  * Audits a Three.js scene (or material map) to verify ZERO meshes emit fake self-light
@@ -132,13 +129,13 @@ export class DebugDrawer {
    * @param {object} [options.portalSystem=null] - PhotoPortals (`enterPortal`, `setBlend`, `verifyPortalProjection`, etc.)
    * @param {object} [options.atmosphere=null] - Atmosphere/sky controller (`setMood`, `setSunAngles`, etc.)
    * @param {object} [options.lightingRig=null] - Real Three.js lighting rig
-   * @param {object} [options.parisWorld=null] - Surrounding 1889 Paris group/controller
+   * @param {object} [options.parisWorld=null] - Surrounding Tehran & Alborz group/controller
    * @param {object} [options.scene=null] - Three.js Scene
    * @param {object} [options.camera=null] - Three.js PerspectiveCamera
    * @param {object} [options.controls=null] - OrbitControls (`target` Vector3)
    * @param {object} [options.renderer=null] - Three.js WebGLRenderer (`info`, `domElement`, `shadowMap`)
    * @param {HTMLCanvasElement} [options.canvas=null] - WebGL canvas for WebM capture
-   * @param {string} [options.assetBasePath='./'] - Relative prefix prepended to `references/...` paths
+   * @param {string} [options.assetBasePath='./'] - Relative prefix prepended to asset paths
    * @param {boolean} [options.enableKeyboardShortcut=true] - Bind `Ctrl+Shift+D` / `Cmd+Shift+D`
    * @param {boolean} [options.autoCheckUrl=true] - Open automatically if `?debug=1`
    * @param {(isOpen: boolean) => void} [options.onToggle]
@@ -178,11 +175,11 @@ export class DebugDrawer {
       zone3: true,
       zone4: true,
       zone5: true,
-      paris_1889: true,
+      tehran_world: true,
       edgesSketch: true,
     };
 
-    this._selectedPortalId = '55';
+    this._selectedPortalId = '13';
     this._portalBlend = 1.0;
     this._wipeEnabled = false;
     this._wipePosition = 0.5;
@@ -579,7 +576,7 @@ export class DebugDrawer {
       ['zone3', 'zone3 · 12-Story Head'],
       ['zone4', 'zone4 · Dome & Mast'],
       ['zone5', 'zone5 · Cranes & Lifts'],
-      ['paris_1889', 'Tehran & Alborz'],
+      ['tehran_world', 'Tehran & Alborz'],
       ['edgesSketch', 'Sketch Lines'],
     ];
 
@@ -626,16 +623,16 @@ export class DebugDrawer {
     freeOpt.textContent = 'None · Free 3D Orbit Camera';
     select.appendChild(freeOpt);
 
-    const group1889 = document.createElement('optgroup');
-    group1889.label = '1994–2008 Milad Tower Portals (11)';
-    for (const p of CALIBRATED_1889_PORTALS) {
+    const groupMilad = document.createElement('optgroup');
+    groupMilad.label = '1997–2008 Milad Tower Portals (8)';
+    for (const p of CALIBRATED_MILAD_PORTALS) {
       const opt = document.createElement('option');
       opt.value = p.id;
       opt.textContent = `${p.label} [step ${p.step.toFixed(2)}, ${p.rmsePx.toFixed(2)}px]`;
       if (p.id === this._selectedPortalId) opt.selected = true;
-      group1889.appendChild(opt);
+      groupMilad.appendChild(opt);
     }
-    select.appendChild(group1889);
+    select.appendChild(groupMilad);
 
     select.addEventListener('change', () => {
       this._selectedPortalId = select.value;
@@ -759,7 +756,7 @@ export class DebugDrawer {
     });
     wipeRow.append(wipeHdr, wipeSlider);
 
-    // Checkboxes: Show 11 3D Frustums
+    // Checkboxes: Show 8 3D Frustums
     const optChecks = document.createElement('div');
     optChecks.className = 'debug-check-grid';
 
@@ -773,7 +770,7 @@ export class DebugDrawer {
       this._applyShowFrustums(this._showFrustums);
     });
     const frustumTxt = document.createElement('span');
-    frustumTxt.textContent = 'Show 11 Frustums';
+    frustumTxt.textContent = 'Show 8 Frustums';
     frustumLbl.append(frustumCb, frustumTxt);
 
     optChecks.append(frustumLbl);
@@ -797,7 +794,7 @@ export class DebugDrawer {
     const verifyBtn = document.createElement('button');
     verifyBtn.type = 'button';
     verifyBtn.className = 'debug-btn';
-    verifyBtn.textContent = 'Verify 11 PnP RMSE';
+    verifyBtn.textContent = 'Verify 8 PnP RMSE';
     verifyBtn.addEventListener('click', () => this._runPnpVerificationTable());
 
     verifyRow.append(tlBtn, verifyBtn);
@@ -994,7 +991,7 @@ export class DebugDrawer {
     const heroBtn = document.createElement('button');
     heroBtn.type = 'button';
     heroBtn.className = 'debug-btn';
-    heroBtn.textContent = 'Stop 12 Hero';
+    heroBtn.textContent = 'Stop 9 Hero';
     heroBtn.addEventListener('click', () => {
       if (this.app?.heroFinaleRig?.flyToPreset) {
         this.app.heroFinaleRig.flyToPreset('overview');
@@ -1132,13 +1129,13 @@ export class DebugDrawer {
   }
 
   _applyZoneVisibility(zoneKey, visible) {
-    if (zoneKey === 'paris_1889') {
+    if (zoneKey === 'tehran_world') {
       if (this.parisWorld?.setVisible) {
         this.parisWorld.setVisible(visible);
       } else if (this.parisWorld?.group) {
         this.parisWorld.group.visible = visible;
       } else if (this.scene?.getObjectByName) {
-        const obj = this.scene.getObjectByName('paris_1889') || this.scene.getObjectByName('Paris1889');
+        const obj = this.scene.getObjectByName('tehran_milad_world');
         if (obj) obj.visible = visible;
       }
       return;
@@ -1175,9 +1172,9 @@ export class DebugDrawer {
   }
 
   _enterPortalFromDebug(photoId) {
-    const p1889 = CALIBRATED_1889_PORTALS.find((p) => p.id === photoId);
-    if (p1889) {
-      this._setRawStep(p1889.step);
+    const portalMeta = CALIBRATED_MILAD_PORTALS.find((p) => p.id === photoId);
+    if (portalMeta) {
+      this._setRawStep(portalMeta.step);
     }
     this.walkthroughController?.pause?.();
     this.portalSystem?.enterPortal?.(photoId, { durationMs: 700 });
@@ -1243,11 +1240,11 @@ export class DebugDrawer {
     }
 
     if (!rows || rows.length === 0) {
-      rows = CALIBRATED_1889_PORTALS.map((p) => ({
+      rows = CALIBRATED_MILAD_PORTALS.map((p) => ({
         id: p.id,
         step: p.step,
         rmsePx: p.rmsePx,
-        era: '1887–89',
+        era: '1994–2008',
       }));
     }
 
@@ -1266,7 +1263,7 @@ export class DebugDrawer {
     for (const r of rows) {
       const tr = document.createElement('tr');
       const idVal = r.id || r.photo_id || '—';
-      const eraVal = r.era || '1887–89';
+      const eraVal = r.era || '1994–2008';
       const stepNum = Number(r.step ?? r.recommended_global_step ?? 11);
       const rmseNum = Number(r.rmsePx ?? r.reprojection_rmse_px ?? r.rmse ?? 0);
 
@@ -1431,13 +1428,13 @@ export class DebugDrawer {
       if (this._refs.craneModeVal) {
         const s = this._rawStep;
         this._refs.craneModeVal.textContent =
-          s < 1.5
-            ? 'Caisson / Masonry'
-            : s < 4.0
-              ? 'Timber Falsework + Jacks'
+          s < 1.45
+            ? '14 m Pit & 66 m Mat'
+            : s < 4.75
+              ? 'Hydraulic Slip-Form Shaft'
               : s < 10.95
-                ? 'Creeper Cranes (Vertical)'
-                : 'Completed Monument';
+                ? 'Head Steel Lift & Mast'
+                : 'Completed 435 m Tower';
       }
       if (this._refs.activeZoneVal) {
         const s = this._rawStep;

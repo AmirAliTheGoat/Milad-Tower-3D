@@ -22,7 +22,7 @@ import {
   minAllowedCameraY,
   computeStructuralClearanceM,
   repelPointFromTowerStructure,
-  repelPointFromExpositionObstacles,
+  repelPointFromTehranObstacles,
   flushOrbitControlsMomentum,
 } from './viewport_constraints.js';
 
@@ -100,7 +100,7 @@ function shortestAngleDelta(fromRad, toRad) {
 
 /**
  * Computes a natural focal distance `lambda` along world ray `(origin, dir)` closest to the
- * Eiffel Tower vertical axis `(0, y, 0)` (or pier foundations when looking obliquely at a leg).
+ * Milad Tower vertical axis `(0, y, 0)`.
  */
 export function computeRayTowerAnchorDistance(originArr, dirArr) {
   const [ox, , oz] = originArr;
@@ -114,8 +114,6 @@ export function computeRayTowerAnchorDistance(originArr, dirArr) {
     // Parameter along ray of closest approach to vertical Tower axis (0, y, 0)
     const tAxis = -(ox * dx + oz * dz) / horizSq;
     if (tAxis > 14.0 && tAxis < maxAxisT) {
-      // Check how close the ray actually passes to the axis; if looking obliquely at a pier
-      // (e.g. #13 caissons or #09 base shoes), anchor near the pier at ~32..68m instead of overshooting
       const closestX = ox + dx * tAxis;
       const closestZ = oz + dz * tAxis;
       const closestAxisDist = Math.hypot(closestX, closestZ);
@@ -123,34 +121,13 @@ export function computeRayTowerAnchorDistance(originArr, dirArr) {
         return clamp(tAxis, 18.0, maxClampT);
       }
     }
-
-    // Ray looks at a diagonal pier (e.g. (±48, ±48)): find closest approach to nearest pier column
-    let bestPierT = null;
-    let bestPierDist = Infinity;
-    for (const sx of [-1, 1]) {
-      for (const sz of [-1, 1]) {
-        const px = sx * 46.0;
-        const pz = sz * 46.0;
-        const tPier = ((px - ox) * dx + (pz - oz) * dz) / horizSq;
-        if (tPier > 10.0 && tPier < 480.0) {
-          const d = Math.hypot(ox + dx * tPier - px, oz + dz * tPier - pz);
-          if (d < bestPierDist) {
-            bestPierDist = d;
-            bestPierT = tPier;
-          }
-        }
-      }
-    }
-    if (bestPierT !== null && bestPierDist < 42.0) {
-      return clamp(bestPierT, 16.0, 480.0);
-    }
   }
 
   return clamp(rOrigin > 22.0 ? rOrigin : 75.0, 22.0, Math.max(480.0, rOrigin * 1.08));
 }
 
 /**
- * Reference 3D Tower structural landmarks spanning `[0 m .. 312.1 m]` used to measure
+ * Reference 3D Tower structural landmarks spanning `[0 m .. 435.0 m]` used to measure
  * exact frame-to-frame optical screen-space projection continuity (`px` delta).
  */
 export const CONTINUITY_PROBE_LANDMARKS_M = Object.freeze([
@@ -643,12 +620,12 @@ export class OpticalCameraRig {
     const knots = [p0];
     const interiorFracs = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875];
 
-    // Detect sweeps between the southern Champ-de-Mars central vista (`z > 185, |x| < 32, y < 22`)
+    // Detect sweeps between the southern central vista (`z > 185, |x| < 32, y < 22`)
     // and either:
-    //   (a) southern SW Pile 3 / West foundation stops (`z > 0`, e.g. `#09 <-> #23`, `#23 <-> #51`, `#51 <-> #14`),
-    //       which glide smoothly down the open Champ-de-Mars central corridor with zero piecewise kinks; or
-    //   (b) northern Parvis / Seine / Trocadéro (`z <= 0`, e.g. `#18 -> #36`), which route along the central
-    //       vista before arcing around the sunlit East Parvis (`R ~ 114 m`).
+    //   (a) southern / western approach stops (`z > 0`),
+    //       which glide smoothly down the open southern plaza corridor with zero piecewise kinks; or
+    //   (b) northern Gisha Plaza / Alborz axis (`z <= 0`), which route along the central
+    //       vista before arcing around the sunlit eastern plaza (`R ~ 114 m`).
     const startInCentralVista = p0.z > 185.0 && Math.abs(p0.x) < 32.0 && p0.y < 22.0 && p1.z < 185.0;
     const endInCentralVista = p1.z > 185.0 && Math.abs(p1.x) < 32.0 && p1.y < 22.0 && p0.z < 185.0;
     const pVistaCheck = startInCentralVista ? p0 : endInCentralVista ? p1 : null;
@@ -657,7 +634,7 @@ export class OpticalCameraRig {
     if (pVistaCheck && pOtherCheck && pOtherCheck.z > 0.0 && Math.abs(dTheta) > 0.45) {
       const pv = pVistaCheck;
       const po = pOtherCheck;
-      const isInteriorLegPerch = po.y > 28.0; // e.g. #51 inside SW Pile 3 at y = 49.66 m
+      const isInteriorLegPerch = po.y > 28.0; // elevated deck/shaft perch above y = 28 m
       const c1 = isInteriorLegPerch
         ? new THREE.Vector3(pv.x * 0.45 - 2.0, Math.max(pv.y + 12.0, 20.0), pv.z * 0.62 + po.z * 0.38)
         : new THREE.Vector3(-28.0, 15.0, 220.0);
@@ -686,9 +663,8 @@ export class OpticalCameraRig {
           });
           pt.lerp(repelledPt, wClear);
         }
-        repelPointFromExpositionObstacles(pt, {
+        repelPointFromTehranObstacles(pt, {
           extraMargin: 5.0,
-          avoidTrees: true,
           preferAerialLift: true,
         });
         const minY = Math.max(2.1, localGroundElevation(pt.x, pt.z) + 1.9);
@@ -741,9 +717,8 @@ export class OpticalCameraRig {
             extraMargin: 3.2,
             enforceInnerEsplanadeExclusion: false,
           });
-          repelPointFromExpositionObstacles(repelledPt, {
+          repelPointFromTehranObstacles(repelledPt, {
             extraMargin: 4.0,
-            avoidTrees: true,
             preferAerialLift: true,
           });
           pt.lerp(repelledPt, wClear);
@@ -830,9 +805,8 @@ export class OpticalCameraRig {
           extraMargin: 8.5,
           enforceInnerEsplanadeExclusion: knot.y < 58.0,
         });
-        repelPointFromExpositionObstacles(knot, {
+        repelPointFromTehranObstacles(knot, {
           extraMargin: 5.5,
-          avoidTrees: true,
           preferAerialLift: true,
         });
         const minKnotY = Math.max(2.1, localGroundElevation(knot.x, knot.z) + 1.9);
@@ -872,9 +846,8 @@ export class OpticalCameraRig {
           extraMargin: 8.5,
           enforceInnerEsplanadeExclusion: Math.abs(dTheta) > 0.85 && yS < 58.0,
         });
-        repelPointFromExpositionObstacles(knot, {
+        repelPointFromTehranObstacles(knot, {
           extraMargin: 5.5,
-          avoidTrees: true,
           preferAerialLift: true,
         });
 
@@ -906,9 +879,8 @@ export class OpticalCameraRig {
           extraMargin: 5.5,
           enforceInnerEsplanadeExclusion: Math.abs(dTheta) > 0.85 && probe.y < 56.0,
         });
-        const c2 = repelPointFromExpositionObstacles(probe, {
+        const c2 = repelPointFromTehranObstacles(probe, {
           extraMargin: 4.8,
-          avoidTrees: true,
           preferAerialLift: true,
         });
         const minY = Math.max(2.0, localGroundElevation(probe.x, probe.z) + 1.8);
@@ -1252,9 +1224,8 @@ export class OpticalCameraRig {
           extraMargin: 5.0,
           enforceInnerEsplanadeExclusion: false,
         });
-        repelPointFromExpositionObstacles(this._tmpVecB, {
+        repelPointFromTehranObstacles(this._tmpVecB, {
           extraMargin: 4.5,
-          avoidTrees: true,
           preferAerialLift: true,
         });
       }

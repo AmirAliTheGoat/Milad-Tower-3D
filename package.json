@@ -4,12 +4,12 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "predev": "[ -d node_modules/.bin ] || bun install || npm install",
+    "predev": "[ -d node_modules/.bin ] || npm install",
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "prebuild": "[ -d node_modules/.bin ] || bun install || npm install",
+    "prebuild": "[ -d node_modules/.bin ] || npm install",
     "build": "vite build",
     "preview": "vite preview --port=3000 --host=0.0.0.0",
-    "prelint": "[ -d node_modules/.bin ] || bun install || npm install",
+    "prelint": "[ -d node_modules/.bin ] || npm install",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

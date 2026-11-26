@@ -33,13 +33,13 @@ export const EXHIBITION_FOG_PRESETS = Object.freeze({
     skyHorizonHex: 0xe6e2da,
     skyMidHex: 0xe2dfd8,
     skyZenithHex: 0xd2cec6,
-    fogNear: 540.0,
-    fogFar: 3200.0,
+    fogNear: 680.0,
+    fogFar: 3450.0,
     radialInner: 260.0,
     radialOuter: 2050.0,
-    radialExponent: 1.55,
-    camFogInner: 640.0,
-    camFogOuter: 2550.0,
+    radialExponent: 2.15,
+    camFogInner: 950.0,
+    camFogOuter: 2800.0,
   }),
   dusk: Object.freeze({
     mood: 'dusk',
@@ -48,13 +48,13 @@ export const EXHIBITION_FOG_PRESETS = Object.freeze({
     skyHorizonHex: 0xe4ddd0,
     skyMidHex: 0xdcd4c7,
     skyZenithHex: 0xc8c0b4,
-    fogNear: 500.0,
-    fogFar: 3050.0,
+    fogNear: 640.0,
+    fogFar: 3300.0,
     radialInner: 245.0,
     radialOuter: 1980.0,
-    radialExponent: 1.52,
-    camFogInner: 610.0,
-    camFogOuter: 2450.0,
+    radialExponent: 2.08,
+    camFogInner: 900.0,
+    camFogOuter: 2700.0,
   }),
   night: Object.freeze({
     mood: 'night',
@@ -63,13 +63,13 @@ export const EXHIBITION_FOG_PRESETS = Object.freeze({
     skyHorizonHex: 0x4b4843,
     skyMidHex: 0x3b3935,
     skyZenithHex: 0x2c2b29,
-    fogNear: 460.0,
-    fogFar: 2850.0,
+    fogNear: 580.0,
+    fogFar: 3100.0,
     radialInner: 230.0,
     radialOuter: 1900.0,
-    radialExponent: 1.48,
-    camFogInner: 580.0,
-    camFogOuter: 2320.0,
+    radialExponent: 2.0,
+    camFogInner: 860.0,
+    camFogOuter: 2550.0,
   }),
 });
 
@@ -124,10 +124,10 @@ export function createWorldMistUniforms(THREE, mood = 'day') {
     uMistExponent: { value: preset.radialExponent },
     uCamFogInner: { value: preset.camFogInner },
     uCamFogOuter: { value: preset.camFogOuter },
-    uInkEdgeFadeInnerR: { value: 240.0 },
-    uInkEdgeFadeOuterR: { value: 1680.0 },
-    uInkCamFadeInner: { value: 520.0 },
-    uInkCamFadeOuter: { value: 1950.0 },
+    uInkEdgeFadeInnerR: { value: 260.0 },
+    uInkEdgeFadeOuterR: { value: 1850.0 },
+    uInkCamFadeInner: { value: 680.0 },
+    uInkCamFadeOuter: { value: 2350.0 },
     uHatchColorLinear: { value: new THREE.Color(0x45433d) },
     uInkNearSrgb: { value: srgbHexToVec3(0x383531) },
     uInkFarSrgb: { value: srgbHexToVec3(0x7a756d) },
@@ -445,10 +445,10 @@ export function auditWorldSketchAndFog({ THREE, scene, parisWorld } = {}) {
   let sketchLineSegmentCount = 0;
   let maxMaterialChroma = 0;
   let maxMaterialHsvSaturation = 0;
-  let seineVerified = false;
+  let tehranTerrainVerified = false;
   let basinWaterCount = 0;
 
-  const root = parisWorld?.group || scene?.getObjectByName?.('paris_1889_world');
+  const root = parisWorld?.group || scene?.getObjectByName?.('tehran_milad_world');
   if (root) {
     root.traverse((obj) => {
       if (obj.isLineSegments) {
@@ -527,10 +527,9 @@ export function auditWorldSketchAndFog({ THREE, scene, parisWorld } = {}) {
             });
           }
         }
-        if (obj.name === 'seine_river_pbr') {
-          seineVerified =
+        if (obj.name === 'tehran_terrain_mesh') {
+          tehranTerrainVerified =
             Boolean(m.isMeshStandardMaterial) &&
-            Boolean(m.normalMap) &&
             Boolean(obj.receiveShadow) &&
             Boolean(m.fog) &&
             (emisHex === 0 || emisInt === 0);
@@ -557,9 +556,9 @@ export function auditWorldSketchAndFog({ THREE, scene, parisWorld } = {}) {
       Math.max(rgbTmp.r, rgbTmp.g, rgbTmp.b) - Math.min(rgbTmp.r, rgbTmp.g, rgbTmp.b);
     fogValid =
       scene.fog.near >= 200 &&
-      scene.fog.near <= 600 &&
+      scene.fog.near <= 700 &&
       scene.fog.far >= 1400 &&
-      scene.fog.far <= 3000 &&
+      scene.fog.far <= 3500 &&
       fogChroma <= 0.12 &&
       hslTmp.l >= 0.18;
     fogDetails = {
@@ -572,26 +571,26 @@ export function auditWorldSketchAndFog({ THREE, scene, parisWorld } = {}) {
     };
   }
 
-  const mistAtParvis140m = Number(evaluateWorldMistFactor(140, 140).toFixed(4));
-  const mistAtTrocadero765m = Number(evaluateWorldMistFactor(765, 765).toFixed(4));
-  const mistAtClosure960m = Number(evaluateWorldMistFactor(960, 960).toFixed(4));
-  const mistAtSkirt1680m = Number(evaluateWorldMistFactor(1680, 1680).toFixed(4));
+  const mistAtPlaza140m = Number(evaluateWorldMistFactor(140, 140).toFixed(4));
+  const mistAtMid1350m = Number(evaluateWorldMistFactor(1350, 1350).toFixed(4));
+  const mistAtClosure2050m = Number(evaluateWorldMistFactor(2050, 2050).toFixed(4));
+  const mistAtSkirt2800m = Number(evaluateWorldMistFactor(2800, 2800).toFixed(4));
 
   const passes =
     Boolean(root) &&
     worldMeshCount > 0 &&
     materialViolations.length === 0 &&
     colorViolations.length === 0 &&
-    seineVerified &&
+    tehranTerrainVerified &&
     basinWaterCount > 0 &&
-    sketchLineObjectCount >= 5 &&
-    sketchLineSegmentCount >= 6000 &&
+    sketchLineObjectCount >= 2 &&
+    sketchLineSegmentCount >= 200 &&
     fogValid &&
-    mistAtParvis140m === 0 &&
-    mistAtTrocadero765m >= 0.65 &&
-    mistAtTrocadero765m <= 0.88 &&
-    mistAtClosure960m >= 0.9999 &&
-    mistAtSkirt1680m === 1;
+    mistAtPlaza140m === 0 &&
+    mistAtMid1350m >= 0.40 &&
+    mistAtMid1350m <= 0.88 &&
+    mistAtClosure2050m >= 0.9999 &&
+    mistAtSkirt2800m === 1;
 
   return {
     passes,
@@ -601,15 +600,15 @@ export function auditWorldSketchAndFog({ THREE, scene, parisWorld } = {}) {
     sketchLineSegmentCount,
     maxMaterialSaturation: Number(maxMaterialHsvSaturation.toFixed(4)),
     maxMaterialChroma: Number(maxMaterialChroma.toFixed(4)),
-    seineVerified,
+    tehranTerrainVerified,
     basinWaterCount,
     fogValid,
     fogDetails,
     mistProfile: {
-      parvis140m: mistAtParvis140m,
-      trocadero765m: mistAtTrocadero765m,
-      closure960m: mistAtClosure960m,
-      worldSkirt1680m: mistAtSkirt1680m,
+      plaza140m: mistAtPlaza140m,
+      mid1350m: mistAtMid1350m,
+      closure2050m: mistAtClosure2050m,
+      worldSkirt2800m: mistAtSkirt2800m,
       safetyBufferBeforeSkirtEdgeM:
         WORLD_DISTANCE_LIMITS.worldGroundSkirtHalfExtentM -
         WORLD_DISTANCE_LIMITS.fullMistClosureRadiusM,

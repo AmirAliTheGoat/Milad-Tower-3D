@@ -74,23 +74,26 @@ export function sampleTehranElevation(x, z) {
     y += slopeMask * (2.6 * Math.sin(x * 0.018) * Math.cos(z * 0.016));
   }
 
-  // Northern Alborz Mountains & Tochal massif (`z < -760 m`)
-  if (z < -760.0) {
-    const northT = smoothstep(-760.0, -1480.0, z);
-    const farPeakT = smoothstep(-1050.0, -1820.0, z);
-    // Ridged multi-harmonic mountain silhouette spanning the entire northern skyline
-    const r1 = 1.0 - Math.abs(Math.sin(x * 0.0021 + 0.65));
-    const r2 = 1.0 - Math.abs(Math.sin(x * 0.0049 - 1.15 + z * 0.0014));
-    const r3 = 1.0 - Math.abs(Math.cos(x * 0.0095 + z * 0.0028));
-    const tochalCenter = Math.exp(-Math.pow((x - 140.0) / 760.0, 2.0));
-    const darakehShoulder = Math.exp(-Math.pow((x + 680.0) / 620.0, 2.0));
-    const farahzadRidge = Math.exp(-Math.pow((x - 940.0) / 680.0, 2.0));
+  // Northern Alborz Mountains & Tochal massif (`z < -720 m`)
+  // Sculpted dramatic multi-ridge northern wall rising to 480–575 m behind Milad Tower
+  if (z < -720.0) {
+    const northT = smoothstep(-720.0, -1180.0, z);
+    const highRidgeT = smoothstep(-920.0, -1480.0, z);
+    const farWallT = smoothstep(-1150.0, -1720.0, z);
+    const r1 = 1.0 - Math.abs(Math.sin(x * 0.0023 + 0.55));
+    const r2 = 1.0 - Math.abs(Math.sin(x * 0.0054 - 1.12 + z * 0.0018));
+    const r3 = 1.0 - Math.abs(Math.cos(x * 0.0108 + z * 0.0032));
+    const tochalCenter = Math.exp(-Math.pow((x - 95.0) / 720.0, 2.0));
+    const darakehShoulder = Math.exp(-Math.pow((x + 620.0) / 580.0, 2.0));
+    const kolakchalEast = Math.exp(-Math.pow((x - 840.0) / 620.0, 2.0));
 
-    const foothills = northT * (78.0 * r1 + 42.0 * r2 + 18.0 * r3);
-    const highPeaks =
-      farPeakT * (235.0 * tochalCenter + 175.0 * darakehShoulder + 160.0 * farahzadRidge) *
-      (0.58 + 0.42 * r1);
-    y += foothills + highPeaks;
+    const foothills = northT * (145.0 * r1 + 68.0 * r2 + 28.0 * r3);
+    const mainMassif =
+      highRidgeT *
+      (295.0 * tochalCenter + 235.0 * darakehShoulder + 225.0 * kolakchalEast) *
+      (0.62 + 0.38 * r1);
+    const highCrown = farWallT * (135.0 * tochalCenter + 95.0 * darakehShoulder + 85.0 * kolakchalEast) * (0.5 + 0.5 * r2);
+    y += foothills + mainMassif + highCrown;
   }
 
   return y;
@@ -169,8 +172,8 @@ function buildSculptedTehranTerrain({ THREE, pal }) {
   // High-resolution terrain mesh covering Gisha Hilltop, Tehran basin, and Alborz foothills/peaks
   const sizeX = 5200;
   const sizeZ = 5200;
-  const segX = 110;
-  const segZ = 110;
+  const segX = 160;
+  const segZ = 160;
   const geo = new THREE.PlaneGeometry(sizeX, sizeZ, segX, segZ);
   geo.rotateX(-Math.PI / 2);
 
@@ -179,10 +182,14 @@ function buildSculptedTehranTerrain({ THREE, pal }) {
     const x = pos.getX(i);
     const z = pos.getZ(i);
     let y = sampleTehranElevation(x, z);
-    // Keep central foundation footprint (`r < 34 m`) recessed slightly so Zone 1's 14 m pit/mat stays clean
+    // Open true 14 m excavation depression cleanly inside `r < 44 m` (bridged by `pitGradeCollar` at r = 35..62 m)
+    // so NO coarse terrain triangle ever intrudes into the circular excavation pit!
     const r = Math.hypot(x, z);
-    if (r < 36.0) {
-      y = -0.35;
+    if (r < 44.0) {
+      y = -15.2;
+    } else if (r < 60.0) {
+      const t = smoothstep(44.0, 60.0, r);
+      y = -15.2 * (1.0 - t) + y * t;
     }
     pos.setY(i, y);
   }
@@ -196,24 +203,91 @@ function buildSculptedTehranTerrain({ THREE, pal }) {
   return mesh;
 }
 
+/**
+ * Dedicated higher-resolution faceted Alborz Mountain massif (`z = -740 .. -1720 m`)
+ * overlaying the northern foothills with crisp angular slate-rock facets (`pal.alborzRock`)
+ * and sunlit snow-dusted ridge caps (`pal.alborzSnow`) for bold silhouettes in Stops 8 & 9.
+ */
+function buildSculptedAlborzMassif({ THREE, pal }) {
+  const grp = new THREE.Group();
+  grp.name = 'alborz_massif_group';
+
+  const widthX = 3600;
+  const depthZ = 980;
+  const zCenter = -1230;
+  const rockGeo = new THREE.PlaneGeometry(widthX, depthZ, 78, 28);
+  rockGeo.rotateX(-Math.PI / 2);
+
+  const rPos = rockGeo.attributes.position;
+  for (let i = 0; i < rPos.count; i++) {
+    const x = rPos.getX(i);
+    const z = rPos.getZ(i) + zCenter;
+    let y = sampleTehranElevation(x, z) + 2.2;
+    // Add crisp angular geological crag facets on upper slopes
+    const crag =
+      Math.sin(x * 0.017 + z * 0.011) * 14.0 +
+      Math.cos(x * 0.031 - z * 0.019) * 8.5;
+    const slopeGain = smoothstep(-780.0, -1080.0, z);
+    // Feather front & back edges cleanly below base terrain so no seam appears
+    const edgeFeather =
+      smoothstep(-740.0, -810.0, z) * smoothstep(-1720.0, -1620.0, z);
+    y = y + crag * slopeGain - (1.0 - edgeFeather) * 18.0;
+    rPos.setZ(i, z);
+    rPos.setY(i, y);
+  }
+  rockGeo.computeVertexNormals();
+
+  const rockMesh = new THREE.Mesh(rockGeo, pal.alborzRock);
+  rockMesh.name = 'alborz_mountain_range';
+  rockMesh.receiveShadow = true;
+  rockMesh.castShadow = false;
+  rockMesh.userData.noSketchEdges = true;
+  grp.add(rockMesh);
+
+  // High-elevation faceted snow-dusted ridge crests (`y > 235 m`, matching winter Alborz snow streaks)
+  const snowGeo = new THREE.PlaneGeometry(3100, 620, 64, 18);
+  snowGeo.rotateX(-Math.PI / 2);
+  const sPos = snowGeo.attributes.position;
+  for (let i = 0; i < sPos.count; i++) {
+    const x = sPos.getX(i);
+    const z = sPos.getZ(i) - 1340;
+    const baseH = sampleTehranElevation(x, z);
+    const ridgeMask = smoothstep(235.0, 320.0, baseH);
+    const gully = 0.5 + 0.5 * Math.sin(x * 0.024 + z * 0.016);
+    const y = baseH + 3.4 + (gully - 0.35) * 12.0 * ridgeMask - (1.0 - ridgeMask) * 48.0;
+    sPos.setZ(i, z);
+    sPos.setY(i, y);
+  }
+  snowGeo.computeVertexNormals();
+
+  const snowMesh = new THREE.Mesh(snowGeo, pal.alborzSnow);
+  snowMesh.name = 'alborz_snow_caps';
+  snowMesh.receiveShadow = true;
+  snowMesh.castShadow = false;
+  snowMesh.userData.noSketchEdges = true;
+  grp.add(snowMesh);
+
+  return grp;
+}
+
 function buildAlborzRidgeContourLines({ lineSeg, targetGrp }) {
-  // Architectural topographic contour strokes along the northern Alborz ridgeline
-  const zBands = [-980, -1180, -1400, -1640, -1880];
+  // Architectural topographic contour strokes along the bold northern Alborz ridgeline
+  const zBands = [-880, -1040, -1200, -1360, -1540];
   for (const zb of zBands) {
-    const stepX = 115;
-    for (let x = -2200; x < 2200; x += stepX) {
+    const stepX = 95;
+    for (let x = -1900; x < 1900; x += stepX) {
       const x1 = x + stepX;
-      const y0 = sampleTehranElevation(x, zb) + 1.2;
-      const y1 = sampleTehranElevation(x1, zb) + 1.2;
+      const y0 = sampleTehranElevation(x, zb) + 5.5;
+      const y1 = sampleTehranElevation(x1, zb) + 5.5;
       lineSeg(targetGrp, x, y0, zb, x1, y1, zb);
     }
   }
-  // Vertical mountain spur ridges running down toward northern Tehran
-  for (let x = -1800; x <= 1800; x += 260) {
-    for (let z = -1850; z < -920; z += 130) {
-      const z1 = z + 130;
-      const y0 = sampleTehranElevation(x, z) + 1.2;
-      const y1 = sampleTehranElevation(x, z1) + 1.2;
+  // Mountain spur ridges running down toward northern Tehran
+  for (let x = -1650; x <= 1650; x += 220) {
+    for (let z = -1560; z < -820; z += 110) {
+      const z1 = z + 110;
+      const y0 = sampleTehranElevation(x, z) + 5.5;
+      const y1 = sampleTehranElevation(x, z1) + 5.5;
       lineSeg(targetGrp, x, y0, z, x, y1, z1);
     }
   }
@@ -323,17 +397,19 @@ export function createTehranMiladWorld({
   // -------------------------------------------------------------------------
   const terrainMesh = buildSculptedTehranTerrain({ THREE, pal });
   terrainGroup.add(terrainMesh);
-  buildAlborzRidgeContourLines({ lineSeg, targetGrp: terrainGroup });
 
-  // Secondary pale limestone snow-cap ridges on the high Tochal massif (> 175 m)
-  const peakTuples = [
-    [140, sampleTehranElevation(140, -1580) - 22, -1580, 420, 95, 210, 0.12],
-    [-580, sampleTehranElevation(-580, -1520) - 24, -1520, 360, 82, 190, -0.18],
-    [880, sampleTehranElevation(880, -1620) - 24, -1620, 380, 88, 200, 0.22],
-  ];
-  instanced(terrainGroup, new THREE.ConeGeometry(0.65, 1.0, 5), pal.marble, peakTuples, {
-    castShadow: false,
-  });
+  // Crisp grade collar rimming the 66 m circular pit (`r = 35.0 .. 62.0 m` at `y = -0.05 m`)
+  const pitGradeCollarGeo = new THREE.RingGeometry(35.0, 62.0, 64);
+  pitGradeCollarGeo.rotateX(-Math.PI / 2);
+  const pitGradeCollar = new THREE.Mesh(pitGradeCollarGeo, pal.gravelSkirt);
+  pitGradeCollar.position.y = -0.05;
+  pitGradeCollar.receiveShadow = true;
+  pitGradeCollar.userData.noSketchEdges = true;
+  terrainGroup.add(pitGradeCollar);
+
+  // Dedicated sculpted faceted Alborz Mountain rock wall & snow-dusted upper peaks
+  terrainGroup.add(buildSculptedAlborzMassif({ THREE, pal }));
+  buildAlborzRidgeContourLines({ lineSeg, targetGrp: terrainGroup });
 
   // -------------------------------------------------------------------------
   // 2. Encircling Tehran Arterial Expressways (Hemmat, Hakim, Chamran, Nouri)
@@ -378,7 +454,7 @@ export function createTehranMiladWorld({
   lineSeg(highwaysGroup, -361, yBasin + 0.45, -1060, -361, yBasin + 0.45, 1140);
   lineSeg(highwaysGroup, -329, yBasin + 0.45, -1060, -329, yBasin + 0.45, 1140);
 
-  // Elevated highway interchange overpasses at the 4 corners
+  // Elevated highway interchange overpasses & full 4-petal cloverleaf ramps at the 4 corners
   const interchanges = [
     [355, -325],
     [-345, -325],
@@ -386,19 +462,28 @@ export function createTehranMiladWorld({
     [-345, 335],
   ];
   for (const [ix, iz] of interchanges) {
-    const bridge = new THREE.Mesh(new THREE.BoxGeometry(58, 2.2, 24), pal.stone);
-    bridge.position.set(ix, yBasin + 4.8, iz);
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(66, 2.4, 26), pal.stone);
+    bridge.position.set(ix, yBasin + 5.0, iz);
     highwaysGroup.add(bridge);
 
-    // Sweeping cloverleaf ramp loops
-    const rampGeo = new THREE.TorusGeometry(42, 4.8, 6, 24);
-    rampGeo.rotateX(Math.PI / 2);
-    const ramp = new THREE.Mesh(rampGeo, pal.street);
-    ramp.scale.set(1, 0.22, 1);
-    ramp.position.set(ix + (ix > 0 ? 44 : -44), yBasin + 0.35, iz + (iz > 0 ? 44 : -44));
-    ramp.userData.noSketchEdges = true;
-    highwaysGroup.add(ramp);
-    ring(highwaysGroup, ramp.position.x, yBasin + 0.9, ramp.position.z, 46.5, 46.5, 24);
+    // 4 Sweeping cloverleaf ramp petals (clearly visible from 315 m rooftop in Stop 7!)
+    const petalOffsets = [
+      [42, 42],
+      [-42, 42],
+      [42, -42],
+      [-42, -42],
+    ];
+    for (const [ox, oz] of petalOffsets) {
+      const rampGeo = new THREE.TorusGeometry(36, 4.6, 6, 24);
+      rampGeo.rotateX(Math.PI / 2);
+      const ramp = new THREE.Mesh(rampGeo, pal.street);
+      ramp.scale.set(1, 0.22, 1);
+      ramp.position.set(ix + ox, yBasin + 0.38, iz + oz);
+      ramp.userData.noSketchEdges = true;
+      highwaysGroup.add(ramp);
+      ring(highwaysGroup, ix + ox, yBasin + 0.92, iz + oz, 40.5, 40.5, 24);
+      ring(highwaysGroup, ix + ox, yBasin + 0.92, iz + oz, 31.5, 31.5, 24);
+    }
   }
 
   // Sweeping hilltop access ring road climbing up Gisha Hill to Milad Cultural Plaza
@@ -496,23 +581,28 @@ export function createTehranMiladWorld({
   const roofs = [];
 
   for (let gx = -1250; gx <= 1250; gx += 78) {
-    for (let gz = -760; gz <= 1180; gz += 78) {
+    // Clamp northern city fabric strictly south of Alborz foothills (`gz >= -640`) so ZERO blocks ever float!
+    for (let gz = -640; gz <= 1180; gz += 78) {
       const r = Math.hypot(gx, gz);
-      // Keep Gisha Hilltop slopes clear (`r < 390`)
+      // Keep Gisha Hilltop slopes clear (`r < 395`)
       if (r < 395) continue;
-      // Keep expressway corridors clear
-      if (Math.abs(gz + 325) < 48 || Math.abs(gz - 335) < 48) continue;
-      if (Math.abs(gx - 355) < 46 || Math.abs(gx + 345) < 46) continue;
-      if (r > 1420) continue;
+      // Keep expressway & cloverleaf interchange corridors clear
+      if (Math.abs(gz + 325) < 52 || Math.abs(gz - 335) < 52) continue;
+      if (Math.abs(gx - 355) < 50 || Math.abs(gx + 345) < 50) continue;
+      if (Math.hypot(gx + 345, gz + 325) < 105 || Math.hypot(gx - 355, gz + 325) < 105) continue;
+      if (r > 1380) continue;
 
       const h1 = hash2(gx, gz);
       if (h1 < 0.24) continue; // Parks, courtyards, and neighborhood streets
 
       const h2 = hash2(gx + 19, gz - 31);
       const h3 = hash2(gx - 43, gz + 17);
-      const jx = gx + (h2 - 0.5) * 26;
-      const jz = gz + (h3 - 0.5) * 26;
+      const jx = gx + (h2 - 0.5) * 24;
+      const jz = gz + (h3 - 0.5) * 24;
+      if (jz < -680) continue;
       const groundY = sampleTehranElevation(jx, jz);
+      // Never place urban boxes on steep rising northern foothills
+      if (groundY > -14.0) continue;
 
       const w = 18 + h1 * 28;
       const d = 18 + h2 * 26;
@@ -520,13 +610,16 @@ export function createTehranMiladWorld({
       const isTowerCluster = (jx < -400 && jz < -360) || (jx > 420 && jz < -360);
       const h = isTowerCluster ? 22 + h3 * 46 : 11 + h3 * 22;
 
-      const tuple = [jx, groundY + h * 0.5 - 1.5, jz, w, h, d, (h1 > 0.7 ? 0.08 : 0)];
+      // Embed every block 6 m deep into the Tehran basin floor so zero buildings ever float on undulations
+      const skirtDepth = 6.0;
+      const totalH = h + skirtDepth;
+      const tuple = [jx, groundY + (h - skirtDepth) * 0.5, jz, w, totalH, d, (h1 > 0.7 ? 0.08 : 0)];
       if (h2 > 0.48) {
         blocksLight.push(tuple);
       } else {
         blocksMid.push(tuple);
       }
-      roofs.push([jx, groundY + h - 1.2, jz, w * 0.96, 1.0, d * 0.96, tuple[6]]);
+      roofs.push([jx, groundY + h + 0.2, jz, w * 0.96, 1.0, d * 0.96, tuple[6]]);
     }
   }
 
@@ -696,11 +789,11 @@ export function createTehranMiladWorld({
   function setStep(step = 11.0) {
     const s = Number.isFinite(Number(step)) ? Number(step) : 11.0;
     currentStep = s;
-    // Show Milad Cultural Plaza & reflecting pools once the 315m shaft & base lobby finish (`step >= 4.2`)
-    plazaGroup.visible = s >= 4.2;
-    plazaLampGroup.visible = s >= 7.5;
-    // Show construction site hoarding & cabins only during early foundation/shaft years (`step < 4.5`)
-    siteFenceGroup.visible = s < 4.5;
+    // Show finished Milad Cultural Plaza & reflecting pools once the base lobby encloses (`step >= 7.8`)
+    plazaGroup.visible = s >= 7.8;
+    plazaLampGroup.visible = s >= 8.5;
+    // Keep construction perimeter hoarding & site cabins active through head & lobby assembly (`step < 8.2`)
+    siteFenceGroup.visible = s < 8.2;
   }
 
   function setVisible(visible) {

@@ -9,10 +9,8 @@
  *      - `sunLight`: `DirectionalLight` with `PCFSoftShadowMap` (`4096x4096` GPU / `2048x2048` software WebGL)
  *      - `hemiLight`: Collodion sky / crushed-limestone gravel `HemisphereLight`
  *      - `rimLight` & `fillLight`: Architectural counter-rim & bounce `DirectionalLight`s
- *      - `4 × PointLight`: Arch & Parvis 1889 gasolier clusters (`[0, 36.5, ±34]`, `[±34, 36.5, 0]`)
- *      - `4 × PointLight`: 1st-Floor Galerie & Restaurant Pavilion lanterns (`[±25.5, 58.6, ±25.5]`)
- *      - `2 × PointLight`: 2nd-Floor Gallery & Le Figaro kiosk lanterns (`[±11.5, 117.6, 0]`)
- *      - `PointLight` + sweeping `SpotLight`: Sautter-Lemonnier Summit Phare (`[0, 297.5, 0]`)
+ *      - `PointLight` clusters: Base Plaza, Main Lobby, Head Basket & Observation Decks
+ *      - `PointLight` + `SpotLight`: Faceted Sky Dome & 120 m Antenna Mast Beacon
  *   2. Zero Unlit Sky/Surface Shaders & Zero Emissivity:
  *      - Sky hemisphere is rendered via a tone-mapped `EquirectangularReflectionMapping` `DataTexture`
  *        on `scene.background` (seamless 0.000-delta horizon match to `scene.fog`, and ZERO unlit
@@ -287,12 +285,6 @@ export function auditZeroEmissive(scene, { enforceZero = false } = {}) {
       return;
     }
     if (!obj.isMesh && !obj.isInstancedMesh) return;
-    if (obj.name === 'sky_dome_1889') {
-      if (enforceZero && obj.parent) {
-        obj.visible = false;
-      }
-      return;
-    }
 
     meshCount += 1;
     const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
@@ -399,16 +391,8 @@ export function createLightingRig({
     throw new Error('createLightingRig requires { THREE, scene }.');
   }
 
-  // Remove any legacy Stage 1 `sky_dome_1889` unlit ShaderMaterial mesh if present
-  const existingSkyMesh = scene.getObjectByName('sky_dome_1889');
-  if (existingSkyMesh && existingSkyMesh.parent) {
-    existingSkyMesh.parent.remove(existingSkyMesh);
-    existingSkyMesh.geometry?.dispose?.();
-    existingSkyMesh.material?.dispose?.();
-  }
-
   const rigGroup = new THREE.Group();
-  rigGroup.name = 'paris_1889_atmosphere';
+  rigGroup.name = 'tehran_milad_atmosphere';
   scene.add(rigGroup);
 
   // 1. Configure Real `PCFShadowMap` Pipeline with Demand-Driven + Active-Motion Updates

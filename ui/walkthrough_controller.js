@@ -7,12 +7,12 @@
  * Stage 6 Guarantees:
  *   1. Post-Load Full 3D Intro + 'Explore' Handoff: Supports `landingMode` holding the
  *      complete 3D Tower (`step = 11.0`, `plateOpacity = 0.0`, `HERO_FINALE_CAMERA`)
- *      until the visitor clicks `Explore` / `Explorer` (with automatic bypass for URL
+ *      until the visitor clicks `Explore` / `کاوش` (with automatic bypass for URL
  *      deep-links and `enterDeterministicMode`).
- *   2. Design-First 12-Stop Loop (`Stop 1 = #55` -> `Stops 2..11 = #13..#38` -> `Stop 12 = 3D`):
- *      Starts on Gustave Eiffel's 1:1,000 elevation drawing (`#55`), builds from `0.55` to `11.0`
- *      through the 10 historical construction/completion glass plates, culminates in the
- *      unobstructed 3D Tower Showcase (`Stop 12`), and loops seamlessly back to `Stop 1` (`#55`).
+ *   2. 9-Stop Chronological Loop (`Stops 1..8 = #13..#38` -> `Stop 9 = 3D`):
+ *      Starts at Gisha Hilltop excavation (`#13`), builds from `0.50` to `11.0`
+ *      through all 8 verified construction & completion photographs, culminates in the
+ *      unobstructed 3D Tower Showcase (`Stop 9`), and loops seamlessly back to `Stop 1` (`#13`).
  *   3. Streamlined Neutral Bar:
  *        - Date-only readout (`#walkthrough-stop-date` — ZERO step fraction counter)
  *        - Date + literal colon-free title in detent tooltips & ARIA labels
@@ -62,21 +62,18 @@ function stripColonsFromTitle(raw) {
  * so girders & falsework match every glass plate.
  */
 export const EXACT_PNP_CALIBRATED_STEPS = Object.freeze({
-  '55': 11.0,
   '13': 0.50,
-  '09': 1.40,
-  '51': 3.15,
-  '23': 4.75,
-  '14': 6.15,
-  '01': 7.05,
-  '46': 8.85,
-  '18': 9.85,
-  '36': 10.60,
+  '09': 1.05,
+  '51': 1.45,
+  '23': 3.15,
+  '14': 4.75,
+  '01': 6.18,
+  '46': 7.45,
   '38': 11.0,
 });
 
 /**
- * Mathematically verified Stop 12 Hero 3D Camera Pose
+ * Mathematically verified Stop 9 Hero 3D Camera Pose
  * framing the full 435 m Milad Tower above Gisha Hilltop against the northern Alborz Mountains.
  */
 export const HERO_FINALE_CAMERA = Object.freeze({
@@ -96,8 +93,8 @@ export const HERO_CRAFTSMANSHIP_PRESETS = Object.freeze([
   },
   {
     id: 'plinths_shoes',
-    labelEn: 'Detail I — 6-Story Lobby & 66 m Mat',
-    labelFa: 'جزئیات I — لابی ۶ طبقه و پی ۶۶ متری',
+    labelEn: 'Detail I — 6-Story Lobby & V-Struts',
+    labelFa: 'جزئیات I — لابی ۶ طبقه و دستک‌های پایه',
     position: [84.0, 22.0, 108.0],
     target: [-4.0, 14.5, 0.0],
     fov: 38.0,
@@ -112,8 +109,8 @@ export const HERO_CRAFTSMANSHIP_PRESETS = Object.freeze([
   },
   {
     id: 'second_platform',
-    labelEn: 'Detail III — 12-Story Head & 280 m Deck',
-    labelFa: 'جزئیات III — سازه رأس ۱۲ طبقه در ۲۸۰ متر',
+    labelEn: 'Detail III — 12-Story X-Diagrid Head',
+    labelFa: 'جزئیات III — سبد خرپایی ۱۲ طبقه رأس برج',
     position: [88.0, 266.0, 128.0],
     target: [-4.0, 276.0, 0.0],
     fov: 38.0,
@@ -129,211 +126,142 @@ export const HERO_CRAFTSMANSHIP_PRESETS = Object.freeze([
 ]);
 
 /**
- * Legacy Stop ID aliases mapped to 0-based Stage 6 indices (`0..11`).
- */
-const STOP_ID_ALIASES = Object.freeze({
-  stop_01_design_elevation_1889: 0,
-  stop_12_full_elevation_1889: 0,
-  design_elevation: 0,
-  '1887_05_caissons': 1,
-  '1887_07_base_shoes': 2,
-  '1888_01_14_lattice_closeup': 3,
-  '1888_01_07_first_stage_timelapse_1': 4,
-  '1888_06_12_second_stage_timelapse_2': 5,
-  '1888_09_14_self_supporting_timelapse_3': 6,
-  '1888_12_26_winter_ascent_timelapse_4': 7,
-  '1889_05_completed_axial_timelapse_5': 8,
-  '1889_summer_under_the_arch': 9,
-  '1889_summer_coutan_basin': 10,
-  '1889_hero_3d_showcase_finale': 11,
-  hero_3d_finale: 11,
-});
-
-/**
- * Authoritative 12-Stop Exhibition Sequence
- * Stop 1 = `#55` Elevation Design Drawing -> Stops 2..11 = `#13..#38` -> Stop 12 = Full 3D Tower.
+ * Authoritative 9-Stop Exhibition Sequence
+ * Stops 1..8 = `#13..#38` Real Archival Construction & Completion Photos -> Stop 9 = Full 3D Tower.
  * Concise, literal stop titles with zero colons (`:`) and rounded whole-meter dimensions.
  */
 export const CANONICAL_WALKTHROUGH_STOPS = Object.freeze([
   {
     stopNumber: 1,
-    stopId: 'stop_01_design_elevation_1889',
-    kind: 'calibrated_archival_photo',
-    photoId: '55',
-    calibratedStep: 11.0,
-    flightDurationSec: 5.2,
-    dateShortEn: '1994–2008',
-    dateShortFa: '۱۳۷۳ تا ۱۳۸۷',
-    shortTitleEn: 'Designing the 435-Meter Milad Tower',
-    shortTitleFa: 'طراحی برج ۴۳۵ متری میلاد تهران',
-    headlineEn: 'Designing the 435-Meter Milad Tower',
-    headlineFa: 'طراحی برج ۴۳۵ متری میلاد تهران',
-    placardBbox: [0.04, 0.08, 0.28, 0.34],
-    placardSurface: 'light',
-  },
-  {
-    stopNumber: 2,
-    stopId: '1887_05_caissons',
+    stopId: 'stop_01_1997_gisha_excavation',
     kind: 'calibrated_archival_photo',
     photoId: '13',
     calibratedStep: 0.50,
-    flightDurationSec: 3.4,
+    flightDurationSec: 2.9,
     dateShortEn: '1997–1999',
     dateShortFa: '۱۳۷۶ تا ۱۳۷۸',
     shortTitleEn: 'Geotechnical Excavation on Gisha Hilltop',
     shortTitleFa: 'گودبرداری ژئوتکنیکی بر فراز تپه گیشا',
     headlineEn: 'Geotechnical Excavation on Gisha Hilltop',
     headlineFa: 'گودبرداری ژئوتکنیکی بر فراز تپه گیشا',
-    placardBbox: [0.03, 0.04, 0.36, 0.28],
+    placardBbox: [0.03, 0.03, 0.34, 0.28],
+    placardSurface: 'light',
+  },
+  {
+    stopNumber: 2,
+    stopId: 'stop_02_1999_foundation_mat',
+    kind: 'calibrated_archival_photo',
+    photoId: '09',
+    calibratedStep: 1.05,
+    flightDurationSec: 2.7,
+    dateShortEn: '1999–2000',
+    dateShortFa: '۱۳۷۸ تا ۱۳۷۹',
+    shortTitleEn: 'The 66-Meter Concrete Foundation Mat',
+    shortTitleFa: 'آرماتوربندی فونداسیون ۶۶ متری و جرثقیل مرکزی',
+    headlineEn: 'The 66-Meter Reinforced Concrete Foundation Mat',
+    headlineFa: 'آرماتوربندی فونداسیون ۶۶ متری و جرثقیل مرکزی',
+    placardBbox: [0.62, 0.03, 0.35, 0.26],
     placardSurface: 'light',
   },
   {
     stopNumber: 3,
-    stopId: '1887_07_base_shoes',
+    stopId: 'stop_03_2000_transition_pedestal',
     kind: 'calibrated_archival_photo',
-    photoId: '09',
-    calibratedStep: 1.40,
-    flightDurationSec: 3.8,
-    dateShortEn: '1999–2000',
-    dateShortFa: '۱۳۷۸ تا ۱۳۷۹',
-    shortTitleEn: 'The 66-Meter Concrete Foundation Mat',
-    shortTitleFa: 'فونداسیون گسترده بتنی به قطر ۶۶ متر',
-    headlineEn: 'The 66-Meter Reinforced Concrete Foundation Mat',
-    headlineFa: 'فونداسیون گسترده بتنی به قطر ۶۶ متر',
-    placardBbox: [0.04, 0.04, 0.36, 0.28],
+    photoId: '51',
+    calibratedStep: 1.45,
+    flightDurationSec: 3.4,
+    dateShortEn: '2000',
+    dateShortFa: '۱۳۷۹',
+    shortTitleEn: 'Conical Transition Pedestal and Radial Buttresses',
+    shortTitleFa: 'سازه انتقالی مخروطی و پشت‌بندهای شعاعی برشی',
+    headlineEn: 'Conical Transition Pedestal and Radial Shear Buttresses',
+    headlineFa: 'سازه انتقالی مخروطی و پشت‌بندهای شعاعی برشی',
+    placardBbox: [0.62, 0.03, 0.35, 0.26],
     placardSurface: 'light',
   },
   {
     stopNumber: 4,
-    stopId: '1888_01_14_lattice_closeup',
+    stopId: 'stop_04_2000_slipform_shaft',
     kind: 'calibrated_archival_photo',
-    photoId: '51',
+    photoId: '23',
     calibratedStep: 3.15,
-    flightDurationSec: 3.0,
+    flightDurationSec: 3.1,
     dateShortEn: '2000–2002',
     dateShortFa: '۱۳۷۹ تا ۱۳۸۱',
     shortTitleEn: 'Slip-Forming the 8-Lobed Concrete Shaft',
     shortTitleFa: 'اجرای قالب لغزنده بدنه بتنی هشت‌پر',
     headlineEn: 'Slip-Forming the 8-Lobed Concrete Shaft',
     headlineFa: 'اجرای قالب لغزنده بدنه بتنی هشت‌پر',
-    placardBbox: [0.04, 0.06, 0.34, 0.30],
+    placardBbox: [0.03, 0.05, 0.26, 0.32],
     placardSurface: 'light',
   },
   {
     stopNumber: 5,
-    stopId: '1888_01_07_first_stage_timelapse_1',
+    stopId: 'stop_05_2003_shaft_topout',
     kind: 'calibrated_archival_photo',
-    photoId: '23',
+    photoId: '14',
     calibratedStep: 4.75,
     flightDurationSec: 3.4,
-    dateShortEn: '2002–2003',
-    dateShortFa: '۱۳۸۱ تا ۱۳۸۲',
-    shortTitleEn: '315-Meter Shaft Top-Out and Base Lobby',
-    shortTitleFa: 'تکمیل بدنه ۳۱۵ متری و لابی ۶ طبقه پایه',
-    headlineEn: '315-Meter Shaft Top-Out and 6-Story Base Lobby',
-    headlineFa: 'تکمیل بدنه ۳۱۵ متری و لابی ۶ طبقه پایه',
-    placardBbox: [0.04, 0.05, 0.34, 0.30],
+    dateShortEn: '2003',
+    dateShortFa: '۱۳۸۲',
+    shortTitleEn: '315-Meter Concrete Shaft Top-Out Above Gisha',
+    shortTitleFa: 'تکمیل بدنه بتنی ۳۱۵ متری بر فراز گیشا',
+    headlineEn: '315-Meter Concrete Shaft Top-Out Above Gisha',
+    headlineFa: 'تکمیل بدنه بتنی ۳۱۵ متری بر فراز گیشا',
+    placardBbox: [0.03, 0.05, 0.26, 0.32],
     placardSurface: 'light',
   },
   {
     stopNumber: 6,
-    stopId: '1888_06_12_second_stage_timelapse_2',
+    stopId: 'stop_06_2003_head_steel_struts',
     kind: 'calibrated_archival_photo',
-    photoId: '14',
-    calibratedStep: 6.15,
+    photoId: '01',
+    calibratedStep: 6.18,
     flightDurationSec: 3.4,
     dateShortEn: '2003–2005',
     dateShortFa: '۱۳۸۲ تا ۱۳۸۴',
-    shortTitleEn: 'Heavy-Lift Assembly of the 12-Story Head',
-    shortTitleFa: 'نصب سنگین سازه فولادی ۱۲ طبقه رأس برج',
-    headlineEn: 'Heavy-Lift Steel Assembly of the 12-Story Head',
-    headlineFa: 'نصب سنگین سازه فولادی ۱۲ طبقه رأس برج',
-    placardBbox: [0.04, 0.05, 0.32, 0.34],
+    shortTitleEn: 'Base V-Struts and 12-Story Steel Head Basket',
+    shortTitleFa: 'دستک‌های V شکل پایه و سبد فولادی ۱۲ طبقه رأس',
+    headlineEn: 'Base V-Struts and Exposed 12-Story Steel Head Basket',
+    headlineFa: 'دستک‌های V شکل پایه و سبد فولادی ۱۲ طبقه رأس',
+    placardBbox: [0.03, 0.05, 0.26, 0.32],
     placardSurface: 'light',
   },
   {
     stopNumber: 7,
-    stopId: '1888_09_14_self_supporting_timelapse_3',
+    stopId: 'stop_07_2006_antenna_collar',
     kind: 'calibrated_archival_photo',
-    photoId: '01',
-    calibratedStep: 7.05,
-    flightDurationSec: 3.4,
-    dateShortEn: '2005–2006',
-    dateShortFa: '۱۳۸۴ تا ۱۳۸۵',
-    shortTitleEn: 'Iranian Geometric Basket Cladding at 60 m',
-    shortTitleFa: 'نمای سبد هندسی ایرانی با قطر ۶۰ متر',
-    headlineEn: 'Iranian Geometric Basket Cladding at 60-Meter Span',
-    headlineFa: 'نمای سبد هندسی ایرانی با قطر ۶۰ متر',
-    placardBbox: [0.04, 0.05, 0.32, 0.36],
+    photoId: '46',
+    calibratedStep: 7.45,
+    flightDurationSec: 3.3,
+    dateShortEn: '2006–2007',
+    dateShortFa: '۱۳۸۵ تا ۱۳۸۶',
+    shortTitleEn: 'Erecting the 120-Meter Antenna Collar at 315 m',
+    shortTitleFa: 'نصب غلاف پایه دکل ۱۲۰ متری در تراز ۳۱۵ متر',
+    headlineEn: 'Erecting the 120-Meter Antenna Collar at 315 Meters',
+    headlineFa: 'نصب غلاف پایه دکل ۱۲۰ متری در تراز ۳۱۵ متر',
+    placardBbox: [0.03, 0.04, 0.30, 0.28],
     placardSurface: 'light',
   },
   {
     stopNumber: 8,
-    stopId: '1888_12_26_winter_ascent_timelapse_4',
-    kind: 'calibrated_archival_photo',
-    photoId: '46',
-    calibratedStep: 8.85,
-    flightDurationSec: 4.2,
-    dateShortEn: '2006–2007',
-    dateShortFa: '۱۳۸۵ تا ۱۳۸۶',
-    shortTitleEn: 'Four-Stage Lift of the 120-Meter Antenna',
-    shortTitleFa: 'بالابری تلسکوپی چهارمرحله‌ای دکل ۱۲۰ متری',
-    headlineEn: 'Four-Stage Telescopic Lift of the 120-Meter Antenna Mast',
-    headlineFa: 'بالابری تلسکوپی چهارمرحله‌ای دکل ۱۲۰ متری',
-    placardBbox: [0.04, 0.05, 0.32, 0.38],
-    placardSurface: 'light',
-  },
-  {
-    stopNumber: 9,
-    stopId: '1889_05_completed_axial_timelapse_5',
-    kind: 'calibrated_archival_photo',
-    photoId: '18',
-    calibratedStep: 9.85,
-    flightDurationSec: 3.0,
-    dateShortEn: '2007–2008',
-    dateShortFa: '۱۳۸۶ تا ۱۳۸۷',
-    shortTitleEn: 'Revolving Restaurant and Observation Decks',
-    shortTitleFa: 'رستوران گردان و سکوهای دید پانوراما',
-    headlineEn: 'Revolving Restaurant and Panoramic Observation Decks',
-    headlineFa: 'رستوران گردان و سکوهای دید پانورامای تهران',
-    placardBbox: [0.04, 0.05, 0.34, 0.36],
-    placardSurface: 'light',
-  },
-  {
-    stopNumber: 10,
-    stopId: '1889_summer_under_the_arch',
-    kind: 'calibrated_archival_photo',
-    photoId: '36',
-    calibratedStep: 10.60,
-    flightDurationSec: 2.8,
-    dateShortEn: '2008',
-    dateShortFa: '۱۳۸۷ (2008)',
-    shortTitleEn: 'Glass Sky Dome and 7 m/s Elevators',
-    shortTitleFa: 'گنبد آسمان شیشه‌ای و آسانسورهای پرسرعت',
-    headlineEn: 'Glass Sky Dome and 7 m/s Panoramic Elevators',
-    headlineFa: 'گنبد آسمان شیشه‌ای و آسانسورهای ۷ متر بر ثانیه',
-    placardBbox: [0.04, 0.06, 0.34, 0.34],
-    placardSurface: 'light',
-  },
-  {
-    stopNumber: 11,
-    stopId: '1889_summer_coutan_basin',
+    stopId: 'stop_08_2008_inauguration_alborz',
     kind: 'calibrated_archival_photo',
     photoId: '38',
     calibratedStep: 11.00,
     flightDurationSec: 3.4,
     dateShortEn: '7 October 2008',
     dateShortFa: '۱۶ مهر ۱۳۸۷',
-    shortTitleEn: 'Inauguration Over Tehran and Alborz',
-    shortTitleFa: 'گشایش رسمی بر فراز تهران و افق البرز',
-    headlineEn: 'Official Inauguration Over Tehran and the Alborz Horizon',
-    headlineFa: 'گشایش رسمی بر فراز تهران و افق البرز',
-    placardBbox: [0.04, 0.06, 0.34, 0.34],
+    shortTitleEn: 'Completed 435-Meter Tower Against Alborz Range',
+    shortTitleFa: 'برج کامل ۴۳۵ متری میلاد در برابر رشته‌کوه البرز',
+    headlineEn: 'Completed 435-Meter Tower Against the Alborz Range',
+    headlineFa: 'برج کامل ۴۳۵ متری میلاد در برابر رشته‌کوه البرز',
+    placardBbox: [0.03, 0.05, 0.26, 0.32],
     placardSurface: 'light',
   },
   {
-    stopNumber: 12,
-    stopId: '1889_hero_3d_showcase_finale',
+    stopNumber: 9,
+    stopId: 'stop_09_milad_hero_3d',
     kind: 'hero_3d_model_finale',
     photoId: null,
     calibratedStep: 11.00,
@@ -356,6 +284,10 @@ const WALKTHROUGH_STRINGS = {
     nextAria: 'Next exhibition stop',
     playAria: 'Play exhibition from master blueprint to completed 435-meter tower',
     pauseAria: 'Pause chronological exhibition',
+    playLabel: 'Play',
+    pauseLabel: 'Pause',
+    playHint: 'Press Play to watch the tower build, or pick a date along the timeline',
+    playHintDismissAria: 'Dismiss playback hint',
     railAria: 'Exhibition sequence from architectural elevation to completed 435-meter Milad Tower',
     reveal3dLabel: 'Reveal 3D',
     reveal3dAria: 'Reveal aligned 3D Milad Tower structure behind this archival plate',
@@ -370,6 +302,10 @@ const WALKTHROUGH_STRINGS = {
     nextAria: 'ایستگاه بعدی نمایشگاه',
     playAria: 'پخش خودکار از نقشه معماری تا برج کامل ۴۳۵ متری',
     pauseAria: 'توقف پخش خودکار نمایشگاه',
+    playLabel: 'پخش',
+    pauseLabel: 'توقف',
+    playHint: 'برای تماشای خودکار ساخت برج، دکمه پخش را بزنید یا روی نوار زمان کلیک کنید',
+    playHintDismissAria: 'بستن راهنمای پخش',
     railAria: 'نوار زمان ساخت برج میلاد از طراحی تا گشایش ۴۳۵ متری',
     reveal3dLabel: 'نمای سه‌بعدی',
     reveal3dAria: 'نمایش مدل سه‌بعدی هم‌تراز در پس این نقشه آرشیوی',
@@ -462,7 +398,7 @@ export class WalkthroughController {
     container = null,
     parent = null,
     stops = null,
-    lang = 'en',
+    lang = 'fa',
     initialStopIndex = 0,
     speedMultiplier = 1.0,
     bindKeyboard = true,
@@ -525,6 +461,7 @@ export class WalkthroughController {
     this._railDragging = false;
     this._revealPointerDownMs = 0;
     this._hoveredStopIndex = null;
+    this._playHintDismissed = false;
 
     this.el = null;
     this._dom = {};
@@ -629,6 +566,7 @@ export class WalkthroughController {
       </svg>
     `;
     prevBtn.addEventListener('click', () => {
+      this._playHintDismissed = true;
       this.pause();
       this.prev({ immediate: false, reason: 'button' });
     });
@@ -646,6 +584,7 @@ export class WalkthroughController {
         <rect x="7" y="5.5" width="3.5" height="13" fill="currentColor" stroke="none" />
         <rect x="13.5" y="5.5" width="3.5" height="13" fill="currentColor" stroke="none" />
       </svg>
+      <span class="walkthrough-play-label"></span>
     `;
     playBtn.addEventListener('click', () => this.togglePlay());
 
@@ -659,11 +598,41 @@ export class WalkthroughController {
       </svg>
     `;
     nextBtn.addEventListener('click', () => {
+      this._playHintDismissed = true;
       this.pause();
       this.next({ immediate: false, reason: 'button' });
     });
 
     transport.append(prevBtn, playBtn, nextBtn);
+
+    const playHint = document.createElement('div');
+    playHint.id = 'walkthrough-play-hint';
+    playHint.className = 'walkthrough-play-hint';
+    playHint.setAttribute('role', 'note');
+
+    const playHintBtn = document.createElement('button');
+    playHintBtn.type = 'button';
+    playHintBtn.className = 'walkthrough-play-hint-body';
+    playHintBtn.addEventListener('click', () => {
+      this._playHintDismissed = true;
+      this.play();
+    });
+
+    const playHintClose = document.createElement('button');
+    playHintClose.type = 'button';
+    playHintClose.className = 'walkthrough-play-hint-close';
+    playHintClose.textContent = '×';
+    playHintClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this._playHintDismissed = true;
+      this._syncBarDom();
+    });
+
+    const playHintArrow = document.createElement('span');
+    playHintArrow.className = 'walkthrough-play-hint-arrow';
+    playHintArrow.setAttribute('aria-hidden', 'true');
+
+    playHint.append(playHintBtn, playHintClose, playHintArrow);
 
     // 2. Active Exhibit Readout (Historical Date ONLY — zero step fraction counter)
     const readout = document.createElement('div');
@@ -718,6 +687,7 @@ export class WalkthroughController {
       btn.addEventListener('pointerleave', () => this._hideDetentTooltip());
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
+        this._playHintDismissed = true;
         this.pause();
         this.goToStop(idx, { immediate: false, reason: 'detent' });
       });
@@ -764,12 +734,16 @@ export class WalkthroughController {
     this._bindRevealButtonEvents(revealBtn);
     contextWrap.appendChild(revealBtn);
 
-    root.append(transport, readout, railWrap, contextWrap);
+    root.append(playHint, transport, readout, railWrap, contextWrap);
 
     this.el = root;
     this._dom = {
+      playHint,
+      playHintBtn,
+      playHintClose,
       prevBtn,
       playBtn,
+      playLabel: playBtn.querySelector('.walkthrough-play-label'),
       iconPlay: playBtn.querySelector('.icon-play'),
       iconPause: playBtn.querySelector('.icon-pause'),
       nextBtn,
@@ -799,6 +773,7 @@ export class WalkthroughController {
     railWrap.addEventListener('pointerdown', (e) => {
       if (e.target.closest('.walkthrough-detent')) return;
       e.preventDefault();
+      this._playHintDismissed = true;
       this.pause();
       this._railDragging = true;
       try {
@@ -892,7 +867,7 @@ export class WalkthroughController {
       if (!stop) return;
       const activePhotoId = this._getEffectivePhotoId();
       if (!activePhotoId) {
-        // Stop 12 Hero 3D Showcase -> Reset Hero Camera View
+        // Stop 9 Hero 3D Showcase -> Reset Hero Camera View
         this._activateHeroFinale({ immediate: false, presetId: 'overview' });
         return;
       }
@@ -938,7 +913,7 @@ export class WalkthroughController {
 
     this.el.setAttribute('aria-label', t.regionAria);
 
-    // Closed loop (`Stop 1 <-> Stop 12`): Prev & Next remain enabled across all stops
+    // Closed loop (`Stop 1 <-> Stop 9`): Prev & Next remain enabled across all stops
     this._dom.prevBtn.disabled = false;
     this._dom.prevBtn.setAttribute('aria-label', t.prevAria);
     this._dom.prevBtn.title = t.prevAria;
@@ -950,8 +925,25 @@ export class WalkthroughController {
     this._dom.playBtn.setAttribute('aria-pressed', this._isPlaying ? 'true' : 'false');
     this._dom.playBtn.setAttribute('aria-label', this._isPlaying ? t.pauseAria : t.playAria);
     this._dom.playBtn.title = this._isPlaying ? t.pauseAria : t.playAria;
+    if (this._dom.playLabel) {
+      this._dom.playLabel.textContent = this._isPlaying ? t.pauseLabel : t.playLabel;
+    }
     this._dom.iconPlay.classList.toggle('hidden', this._isPlaying);
     this._dom.iconPause.classList.toggle('hidden', !this._isPlaying);
+
+    if (this._dom.playHint) {
+      const showHint = !this._isPlaying && !this._playHintDismissed && !this._landingMode;
+      this._dom.playHint.hidden = !showHint;
+      this._dom.playHint.setAttribute('aria-hidden', showHint ? 'false' : 'true');
+      this._dom.playHint.classList.toggle('is-visible', showHint);
+      if (this._dom.playHintBtn) {
+        this._dom.playHintBtn.textContent = t.playHint;
+      }
+      if (this._dom.playHintClose) {
+        this._dom.playHintClose.setAttribute('aria-label', t.playHintDismissAria);
+        this._dom.playHintClose.title = t.playHintDismissAria;
+      }
+    }
 
     const dateStr = this._lang === 'fa' ? stop.dateShortFa : stop.dateShortEn;
     const shortTitle = stripColonsFromTitle(
@@ -976,7 +968,7 @@ export class WalkthroughController {
       btn.classList.toggle('is-visited', i < idx || i <= Math.floor(this._tau + 0.02));
     });
 
-    // Contextual right button (`Reveal 3D` vs `Show Plate` vs `Reset View` on Stop 12)
+    // Contextual right button (`Reveal 3D` vs `Show Plate` vs `Reset View` on Stop 9)
     const activePhotoId = this._getEffectivePhotoId();
     if (!activePhotoId) {
       this._dom.iconLayers.classList.add('hidden');
@@ -1057,10 +1049,6 @@ export class WalkthroughController {
     if (!q) return this._stopIndex;
 
     const lower = q.toLowerCase();
-    if (Object.prototype.hasOwnProperty.call(STOP_ID_ALIASES, lower)) {
-      return clamp(STOP_ID_ALIASES[lower], 0, this._stops.length - 1);
-    }
-
     const cleanPhoto = q.replace(/^#|^photo_/i, '').padStart(2, '0');
     const byId = this._stops.findIndex(
       (s) => s.stopId.toLowerCase() === lower || s.photoId === cleanPhoto
@@ -1225,11 +1213,12 @@ export class WalkthroughController {
   }
 
   play() {
+    this._playHintDismissed = true;
     if (this._landingMode) {
       this.setLandingMode(false);
     }
 
-    // At Stop 12: deterministic capture resets immediately; interactive play loops smoothly into Stop 1 (#55)
+    // At Stop 9: deterministic capture resets immediately; interactive play loops smoothly into Stop 1 (#13)
     if (this._stopIndex >= this._stops.length - 1) {
       if (this._deterministicMode) {
         this.goToStop(0, { immediate: true, reason: 'replay_from_start' });
@@ -1526,7 +1515,7 @@ export class WalkthroughController {
           this.pause();
           this._beat = 'idle';
         } else {
-          // Interactive autoplay loops seamlessly from Stop 12 (3D Tower) back to Stop 1 (#55)
+          // Interactive autoplay loops seamlessly from Stop 9 (3D Tower) back to Stop 1 (#13)
           this._fromStopIndex = this._stopIndex;
           this._toStopIndex = 0;
           this._startBeat('beat_a_yield', BEAT_A_HERO_YIELD_SEC);

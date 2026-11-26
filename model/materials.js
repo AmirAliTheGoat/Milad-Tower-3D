@@ -1,14 +1,10 @@
 /**
  * Elevated Archival PBR Material Library & Tower Surface Upgrader (`model/materials.js`)
  *
- *   - Archival Photography & Lemercier Vellum Palette (#5 & #8)
  *   - 100% Real Light Response Only (`emissive = 0x000000`, `emissiveIntensity = 0.0`, `0` AdditiveBlending)
  *   - High-definition `512x512` & `256x256` procedural PBR maps (analytic normal, cavity AO, roughness)
- *     via world-space triplanar sampling (`attachWorldSurfacePbr`) so UV-less `MeshBucket` iron girders,
- *     riveted gussets, ashlar plinths, timber scaffolds, copper cupola, gilt accents, elevator cabins,
- *     and all horizontal oak promenade decks (`isWoodDecking`) exhibit crisp close-up 3D relief.
- *   - Automatic embossed normal/roughness generation for UV-mapped `CanvasTexture` frieze plaques (72 scientists),
- *     `LE FIGARO` kiosk plaques, porcelain-enamel `DESCENTE`/`MONTÉE` signs, and `R.F. 1889` wool tricolore flag.
+ *     via world-space triplanar sampling (`attachWorldSurfacePbr`) so UV-less concrete shafts,
+ *     travertine panels, forged steel trusses, timber decking, and forged crane rigs exhibit crisp 3D relief.
  */
 
 import {
@@ -17,9 +13,7 @@ import {
 } from './floor_textures.js';
 
 let _cachedTowerPbrBank = null;
-let _cachedTricoloreTex = null;
 const _noiseGridCache = new Map();
-const _embossedCanvasCache = new WeakMap();
 
 function hash2i(ix, iy, seed = 1) {
   let n = (Math.imul(ix, 374761393) + Math.imul(iy, 668265263) + Math.imul(seed, 1442695041)) | 0;
@@ -182,45 +176,6 @@ function wrapSurfaceTrio(THREE, raw, maxAniso) {
     normalMap: mk(normalBytes, false),
     roughnessMap: mk(roughAoBytes, false),
   };
-}
-
-function makeTricoloreRaw() {
-  const w = 384;
-  const h = 256;
-  const data = new Uint8Array(w * h * 4);
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      let r = 234;
-      let g = 229;
-      let b = 220;
-      if (x < 128) {
-        r = 47; g = 59; b = 70;
-      } else if (x >= 256) {
-        r = 125; g = 61; b = 51;
-      }
-      const weave = (((x + y) & 3) < 2 ? 4 : -4) + (hash2i(x, y, 3001) - 0.5) * 8;
-      const seam = Math.abs(x - 128) <= 1 || Math.abs(x - 256) <= 1 ? -14 : 0;
-      const border = x <= 1 || x >= w - 2 || y <= 1 || y >= h - 2 ? -18 : 0;
-      const o = (y * w + x) * 4;
-      data[o] = clampByte(r + weave + seam + border);
-      data[o + 1] = clampByte(g + weave + seam + border);
-      data[o + 2] = clampByte(b + weave + seam + border);
-      data[o + 3] = 255;
-    }
-  }
-  return { w, h, data };
-}
-
-function wrapTricoloreTexture(THREE, raw) {
-  const { w, h, data } = raw;
-  const tex = new THREE.DataTexture(data, w, h, THREE.RGBAFormat, THREE.UnsignedByteType);
-  if (THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
-  tex.generateMipmaps = true;
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  tex.anisotropy = 8;
-  tex.needsUpdate = true;
-  return tex;
 }
 
 export function synthesizeTowerPbrRawBank() {
@@ -480,8 +435,6 @@ export function synthesizeTowerPbrRawBank() {
     return { h, albR: lum, albG: lum, albB: lum, rough, ao };
   });
 
-  const tricolore = makeTricoloreRaw();
-
   return {
     puddledIron,
     castIron,
@@ -493,7 +446,6 @@ export function synthesizeTowerPbrRawBank() {
     hammeredGilt,
     crownGlassWave,
     wovenFabric,
-    tricolore,
   };
 }
 
@@ -512,9 +464,6 @@ export function hydrateTowerPbrBank(THREE, rawBank, maxAniso = 8) {
     crownGlassWave: wrapSurfaceTrio(THREE, rawBank.crownGlassWave, maxAniso),
     wovenFabric: wrapSurfaceTrio(THREE, rawBank.wovenFabric, maxAniso),
   };
-  if (rawBank.tricolore && !_cachedTricoloreTex) {
-    _cachedTricoloreTex = wrapTricoloreTexture(THREE, rawBank.tricolore);
-  }
   return _cachedTowerPbrBank;
 }
 
@@ -523,126 +472,13 @@ function getTowerPbrBank(THREE, maxAniso = 8) {
   return hydrateTowerPbrBank(THREE, synthesizeTowerPbrRawBank(), maxAniso);
 }
 
-function makeTricoloreTexture(THREE) {
-  if (_cachedTricoloreTex) return _cachedTricoloreTex;
-  _cachedTricoloreTex = wrapTricoloreTexture(THREE, makeTricoloreRaw());
-  return _cachedTricoloreTex;
-}
-
-/**
- * Derives an embossed tangent-space `normalMap` + metallic/vitreous `roughnessMap`
- * from an existing 2D `CanvasTexture` (such as the 72 scientist frieze plaques,
- * `LE FIGARO` kiosk plaques, porcelain-enamel `DESCENTE` signs, or `R.F. 1889` flag).
- */
-function attachEmbossedReliefToCanvasMaterial(THREE, mat, {
-  heightScale = 2.8,
-  brightIsRaised = true,
-  raisedRoughness = 0.34,
-  baseRoughness = 0.62,
-} = {}) {
-  if (!mat || !mat.map || !mat.map.image || mat.userData?.__s2EmbossedAttached) return;
-  const img = mat.map.image;
-  const w = Number(img.width) || 0;
-  const h = Number(img.height) || 0;
-  if (w < 8 || h < 8 || typeof img.getContext !== 'function') return;
-
-  let cachedPair = _embossedCanvasCache.get(mat.map);
-  if (!cachedPair) {
-    const ctx = img.getContext('2d');
-    if (!ctx) return;
-    let src;
-    try {
-      src = ctx.getImageData(0, 0, w, h).data;
-    } catch {
-      return;
-    }
-
-    const total = w * h;
-    const lum = new Float32Array(total);
-    const roughBytes = new Uint8Array(total * 4);
-    const normBytes = new Uint8Array(total * 4);
-    // Flat tangent-space normal `[128, 128, 255, 255]` (`0xffff8080` in little-endian RGBA)
-    new Uint32Array(normBytes.buffer).fill(0xffff8080);
-
-    const rSpan = raisedRoughness - baseRoughness;
-    for (let i = 0; i < total; i++) {
-      const o = i << 2;
-      const l = (0.299 * src[o] + 0.587 * src[o + 1] + 0.114 * src[o + 2]) * (1.0 / 255.0);
-      const hVal = brightIsRaised ? l : 1.0 - l;
-      lum[i] = hVal;
-      const rVal = baseRoughness + rSpan * smooth01((hVal - 0.35) * 2.5);
-      roughBytes[o] = 240;
-      roughBytes[o + 1] = clampByte(rVal * 255);
-      roughBytes[o + 2] = 255;
-      roughBytes[o + 3] = 255;
-    }
-
-    for (let y = 0; y < h; y++) {
-      const ymOff = (y === 0 ? 0 : y - 1) * w;
-      const ycOff = y * w;
-      const ypOff = (y + 1 === h ? h - 1 : y + 1) * w;
-      for (let x = 0; x < w; x++) {
-        const xm = x === 0 ? 0 : x - 1;
-        const xp = x + 1 === w ? w - 1 : x + 1;
-        const dlx = lum[ycOff + xp] - lum[ycOff + xm];
-        const dly = lum[ypOff + x] - lum[ymOff + x];
-        if (dlx === 0 && dly === 0) continue;
-        const nx = -dlx * heightScale;
-        const ny = dly * heightScale; // Canvas Y is top-down vs UV V bottom-up
-        const inv = 1.0 / Math.sqrt(nx * nx + ny * ny + 1.0);
-        const o = (ycOff + x) << 2;
-        normBytes[o] = clampByte((nx * inv * 0.5 + 0.5) * 255);
-        normBytes[o + 1] = clampByte((ny * inv * 0.5 + 0.5) * 255);
-        normBytes[o + 2] = clampByte((inv * 0.5 + 0.5) * 255);
-      }
-    }
-
-    const nTex = new THREE.DataTexture(normBytes, w, h, THREE.RGBAFormat, THREE.UnsignedByteType);
-    if (THREE.NoColorSpace) nTex.colorSpace = THREE.NoColorSpace;
-    nTex.flipY = mat.map.flipY;
-    nTex.generateMipmaps = true;
-    nTex.minFilter = THREE.LinearMipmapLinearFilter;
-    nTex.magFilter = THREE.LinearFilter;
-    nTex.anisotropy = 8;
-    nTex.needsUpdate = true;
-
-    const rTex = new THREE.DataTexture(roughBytes, w, h, THREE.RGBAFormat, THREE.UnsignedByteType);
-    if (THREE.NoColorSpace) rTex.colorSpace = THREE.NoColorSpace;
-    rTex.flipY = mat.map.flipY;
-    rTex.generateMipmaps = true;
-    rTex.minFilter = THREE.LinearMipmapLinearFilter;
-    rTex.magFilter = THREE.LinearFilter;
-    rTex.anisotropy = 8;
-    rTex.needsUpdate = true;
-
-    cachedPair = { nTex, rTex };
-    _embossedCanvasCache.set(mat.map, cachedPair);
-  }
-
-  mat.normalMap = cachedPair.nTex;
-  mat.normalScale = new THREE.Vector2(0.85, 0.85);
-  mat.roughnessMap = cachedPair.rTex;
-  mat.roughness = 1.0; // Driven directly by rTex.g (`raisedRoughness` .. `baseRoughness`)
-  if (mat.map) {
-    mat.map.anisotropy = 8;
-    mat.map.needsUpdate = true;
-  }
-  if (mat.emissive) mat.emissive.setHex(0x000000);
-  mat.emissiveIntensity = 0.0;
-  mat.emissiveMap = null;
-  mat.userData = mat.userData || {};
-  mat.userData.__s2EmbossedAttached = true;
-  mat.needsUpdate = true;
-}
-
 // ---------------------------------------------------------------------------
-// Primary Material Factory (100% Drop-In Compatible with `model/materials.js`)
+// Primary Material Factory (`model/materials.js`)
 // ---------------------------------------------------------------------------
 
 export function createMaterials(THREE, { maxAnisotropy = 8 } = {}) {
   const towerBank = getTowerPbrBank(THREE, maxAnisotropy);
   const floorBank = getFloorTextureBank(THREE, maxAnisotropy);
-  const tricoloreTex = makeTricoloreTexture(THREE);
 
   const mkTowerTri = (name, color, roughness, metalness, envMapIntensity, side, triOpts) => {
     const mat = new THREE.MeshStandardMaterial({
@@ -847,21 +683,7 @@ export function createMaterials(THREE, { maxAnisotropy = 8 } = {}) {
     aoStrength: 0.55,
   });
 
-  // 13. Woven Wool Bunting Summit Tricolore Flag & Striped Pavilion Canvas Awnings
-  const flagTricolore = new THREE.MeshStandardMaterial({
-    name: 'flagTricolore',
-    color: 0xffffff,
-    map: tricoloreTex,
-    normalMap: towerBank.wovenFabric.normalMap,
-    normalScale: new THREE.Vector2(0.65, 0.65),
-    roughnessMap: towerBank.wovenFabric.roughnessMap,
-    roughness: 0.84,
-    metalness: 0.00,
-    side: THREE.DoubleSide,
-  });
-  flagTricolore.emissive.setHex(0x000000);
-  flagTricolore.emissiveIntensity = 0.0;
-
+  // 13. Canvas Fabric Awnings
   const awningCream = mkTowerTri('awningCream', 0xdfd8ca, 0.86, 0.00, 0.72, THREE.DoubleSide, {
     pbrTrio: towerBank.wovenFabric,
     tileMeters: [0.85, 0.85],
@@ -882,7 +704,7 @@ export function createMaterials(THREE, { maxAnisotropy = 8 } = {}) {
 
   // 14. Milad Tower (Borj-e Milad) Architectural PBR Materials (100% Real Light, 0 Emissive)
   const miladConcrete = mkTowerTri('miladConcrete', 0xc9c5bc, 0.84, 0.03, 0.72, THREE.FrontSide, {
-    pbrTrio: towerBank.concreteSub,
+    pbrTrio: towerBank.concreteMassif,
     tileMeters: [4.8, 4.8],
     albedoStrength: 0.42,
     normalStrength: 0.76,
@@ -891,7 +713,7 @@ export function createMaterials(THREE, { maxAnisotropy = 8 } = {}) {
   });
 
   const miladConcreteRib = mkTowerTri('miladConcreteRib', 0x9f9b92, 0.88, 0.04, 0.68, THREE.FrontSide, {
-    pbrTrio: towerBank.concreteSub,
+    pbrTrio: towerBank.concreteMassif,
     tileMeters: [4.0, 4.0],
     albedoStrength: 0.45,
     normalStrength: 0.80,
@@ -900,7 +722,7 @@ export function createMaterials(THREE, { maxAnisotropy = 8 } = {}) {
   });
 
   const miladTravertine = mkTowerTri('miladTravertine', 0xd8d1c4, 0.76, 0.02, 0.76, THREE.FrontSide, {
-    pbrTrio: towerBank.ashlarStone,
+    pbrTrio: floorBank.ashlarMasonry,
     tileMeters: [3.2, 2.4],
     albedoStrength: 0.46,
     normalStrength: 0.72,
@@ -909,7 +731,7 @@ export function createMaterials(THREE, { maxAnisotropy = 8 } = {}) {
   });
 
   const miladHeadSteel = mkTowerTri('miladHeadSteel', 0x7b8085, 0.38, 0.66, 1.15, THREE.DoubleSide, {
-    pbrTrio: towerBank.rivetedIron,
+    pbrTrio: towerBank.forgedSteel,
     tileMeters: [2.8, 2.8],
     albedoStrength: 0.36,
     normalStrength: 0.58,
@@ -918,7 +740,7 @@ export function createMaterials(THREE, { maxAnisotropy = 8 } = {}) {
   });
 
   const miladHeadCladding = mkTowerTri('miladHeadCladding', 0xbab7b0, 0.46, 0.36, 0.98, THREE.DoubleSide, {
-    pbrTrio: towerBank.rivetedIron,
+    pbrTrio: towerBank.forgedSteel,
     tileMeters: [3.4, 3.4],
     albedoStrength: 0.28,
     normalStrength: 0.42,
@@ -972,7 +794,7 @@ export function createMaterials(THREE, { maxAnisotropy = 8 } = {}) {
   miladSkyDomeGlass.emissiveIntensity = 0.0;
 
   const miladCraneSteel = mkTowerTri('miladCraneSteel', 0x8d7b56, 0.48, 0.50, 0.96, THREE.DoubleSide, {
-    pbrTrio: towerBank.rivetedIron,
+    pbrTrio: towerBank.forgedSteel,
     tileMeters: [2.2, 2.2],
     albedoStrength: 0.40,
     normalStrength: 0.62,
@@ -998,7 +820,6 @@ export function createMaterials(THREE, { maxAnisotropy = 8 } = {}) {
     lampGlobe1889_glass: lampGlobe1889,
     goldAccent,
     copperDome,
-    flagTricolore,
     craneSteel,
     awningCream,
     awningStripe,
@@ -1017,21 +838,14 @@ export function createMaterials(THREE, { maxAnisotropy = 8 } = {}) {
 export const createMaterialLibrary = createMaterials;
 
 // ---------------------------------------------------------------------------
-// Post-Build Tower Hierarchy Material, Deck & Plaque Upgrader
+// Post-Build Tower Hierarchy Material & Deck Upgrader
 // ---------------------------------------------------------------------------
 
 /**
  * Traverses a built `TowerModelController` root group (or `scene`) and upgrades:
- *   1. All horizontal visitor floor decks (`mesh.userData.isWoodDecking === true` at
- *      `+5.82 m`, `+56.40 m`, `+57.63 m`, `+115.73 m`, `+195.93 m`, `+276.13 m`, `+278.71 m`)
- *      to `materials.oakDeckPlanks` (`512x512` oiled oak plank grooves + bolt dimples).
- *   2. All elevator cabin wood bodies (`cabin_body_*`, `edoux_cabine_*`) to `materials.elevatorCabinRed`
- *      (`#5e3d31`, varnished burgundy-russet wood paneling).
- *   3. All inline `CanvasTexture` signs/plaques/flags (`friezePlaques_*` 72 scientists,
- *      `leFigaroPlaque`, `descenteEnamelSign`, `enamel_*`, `flagTricolore_RF1889`) with
- *      embossed normal & metallic/porcelain roughness maps.
- *   4. All pavilion canvas awnings (`awningCream`, `awningStripe`) and any fallback materials,
- *      enforcing `castShadow = true`, `receiveShadow = true`, and `0` emissive everywhere.
+ *   1. All horizontal floor decks (`mesh.userData.isWoodDecking === true`) to `materials.oakDeckPlanks`.
+ *   2. Canonical Tower material keys to elevated Stage-2 PBR instances.
+ *   3. Zero-emissive and real shadow flags across all meshes.
  */
 export function upgradeTowerMaterialsAndDecks(towerRootOrController, THREE, providedMaterials = null) {
   const root = towerRootOrController?.rootGroup || towerRootOrController;
@@ -1084,10 +898,18 @@ export function upgradeTowerMaterialsAndDecks(towerRootOrController, THREE, prov
     'lampGlobe1889_glass',
     'goldAccent',
     'copperDome',
-    'flagTricolore',
     'craneSteel',
     'awningCream',
     'awningStripe',
+    'miladConcrete',
+    'miladConcreteRib',
+    'miladTravertine',
+    'miladHeadSteel',
+    'miladHeadCladding',
+    'miladDarkMullion',
+    'miladTurquoiseGlass',
+    'miladSkyDomeGlass',
+    'miladCraneSteel',
   ]);
   let canonicalMeshesSwapped = 0;
 
@@ -1128,7 +950,7 @@ export function upgradeTowerMaterialsAndDecks(towerRootOrController, THREE, prov
       canonicalMeshesSwapped += 1;
     }
 
-    // 4. Add embossed normal + roughness maps to inline CanvasTexture plaques, signs & RF flag
+    // 4. Enforce strict zero-emissive and shadow compliance across all Tower materials
     const mList = Array.isArray(obj.material) ? obj.material : [obj.material];
     for (const m of mList) {
       if (!m) continue;
@@ -1136,41 +958,6 @@ export function upgradeTowerMaterialsAndDecks(towerRootOrController, THREE, prov
       m.emissiveIntensity = 0.0;
       m.emissiveMap = null;
       m.blending = THREE.NormalBlending;
-
-      const mn = String(m.name || '');
-      if (mn.startsWith('friezePlaques_')) {
-        // Raised gilt scientist lettering on matte oxidized rouge-de-Venise iron band
-        attachEmbossedReliefToCanvasMaterial(THREE, m, {
-          heightScale: 3.2,
-          brightIsRaised: true,
-          raisedRoughness: 0.34,
-          baseRoughness: 0.62,
-        });
-        m.metalness = 0.56;
-        m.envMapIntensity = 1.20;
-        embossedPlaquesUpgraded += 1;
-      } else if (mn === 'leFigaroPlaque' || mn === 'descenteEnamelSign' || mn.startsWith('enamel_')) {
-        // Vitreous porcelain-enamel signage & gilt-lettered Figaro kiosk plaque
-        const isLightEnamel = mn === 'descenteEnamelSign';
-        attachEmbossedReliefToCanvasMaterial(THREE, m, {
-          heightScale: 2.2,
-          brightIsRaised: !isLightEnamel,
-          raisedRoughness: 0.24,
-          baseRoughness: 0.32,
-        });
-        m.metalness = mn === 'leFigaroPlaque' ? 0.38 : 0.10;
-        m.envMapIntensity = 1.12;
-        embossedPlaquesUpgraded += 1;
-      } else if (mn === 'flagTricolore_RF1889') {
-        const towerBank = getTowerPbrBank(THREE);
-        m.normalMap = towerBank.wovenFabric.normalMap;
-        m.normalScale = new THREE.Vector2(0.68, 0.68);
-        m.roughnessMap = towerBank.wovenFabric.roughnessMap;
-        m.roughness = 0.84;
-        m.metalness = 0.0;
-        m.needsUpdate = true;
-        embossedPlaquesUpgraded += 1;
-      }
 
       if (!m.transparent) {
         obj.castShadow = true;

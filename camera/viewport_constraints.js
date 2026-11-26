@@ -7,15 +7,15 @@
  *
  *   1. Height- & distance-adaptive Tower-spine target tether (`[7.5 m .. 295.0 m]` vertical,
  *      tightening toward `[0, y, 0]` as orbital distance increases).
- *   2. Spherical ground-floor polar pre-clamp (`Y >= max(1.90 m, localGroundY + 1.75 m)`)
- *      solved BEFORE Cartesian conversion so downward drags glide horizontally along
- *      pedestrian eye-level without collapsing horizontal radius into the piers.
- *   3. Exact 4-pier (`±45°` inclined legs) + upper-shaft exterior structural exclusion so
- *      the camera never clips inside iron lattice bars, masonry plinths, or platform decks.
- *   4. World-edge & aerial-mist safety cap (`maxDist = 555 m`, `R_xz <= 555 m`, >400 m inside
+ *   2. Spherical ground-floor polar pre-clamp (`Y >= max(-20.0 m, localGroundY + 2.2 m)`)
+ *      solved BEFORE Cartesian conversion so downward drags glide smoothly along the
+ *      Gisha Hilltop plaza without collapsing horizontal radius into the lobby base.
+ *   3. Exact structural envelope exclusion (`towerHalfWidthAtY`) across the 6-story lobby,
+ *      8-lobed concrete shaft, 60 m head pod, Sky Dome, and 120 m antenna mast.
+ *   4. World-edge & aerial-mist safety cap (`maxDist = 555 m`, `R_xz <= 555 m`, well inside
  *      the 960 m 100%-mist horizon closure ring).
  *   5. Strict Anti-Outward-Gaze & Tower-In-Viewport Frustum Guard: prevents panning or
- *      looking outward away from the Eiffel Tower into surrounding low-poly Paris blocks,
+ *      looking outward away from Milad Tower into surrounding low-poly Tehran urban blocks,
  *      guaranteeing the Tower spine stays framed inside `|ndc_x| <= 0.56, |ndc_y| <= 0.78`.
  *   6. `OrbitControls` residual damping flush when hitting boundaries so controls never
  *      accumulate phantom velocity or bounce against constraints.
@@ -64,18 +64,6 @@ export function localGroundElevation(x, z) {
  */
 export function minAllowedCameraY(x, z) {
   return Math.max(-20.0, localGroundElevation(x, z) + 2.2);
-}
-
-/**
- * Legacy helper retained for API compatibility with optical camera tests.
- */
-export function getInclinedPierLegSpec(y) {
-  const h = clamp(Number(y) || 0, 0, 27.0);
-  const u = clamp(h / 27.0, 0, 1);
-  return {
-    centerOffsetM: lerp(22.0, 14.0, u),
-    legRadiusM: lerp(12.0, 9.0, u),
-  };
 }
 
 /**
@@ -137,14 +125,14 @@ export function repelPointFromTowerStructure(
 }
 
 /**
- * Smoothly pushes or elevates a 3D point `(x, y, z)` outside all 1889 Exposition Universelle
- * pavilions, cupolas, covered promenade walkways, fountains, and outer Haussmannian blocks
- * (`w_champ_de_mars.js`, `w_parvis_seine.js`, `w_trocadero.js`).
+ * Smoothly pushes or elevates a 3D point `(x, y, z)` outside Gisha Hilltop Cultural Plaza
+ * buildings and water features (Milad International Convention Center, East Cultural Gallery,
+ * Southern Reflecting Pools) and above local terrain slope.
  * Mutates `vec3` in place and returns `true` if adjusted.
  */
-export function repelPointFromExpositionObstacles(
+export function repelPointFromTehranObstacles(
   vec3,
-  { extraMargin = 4.5, avoidTrees = false, preferAerialLift = false } = {}
+  { extraMargin = 4.5, preferAerialLift = false } = {}
 ) {
   let changed = false;
   let x = vec3.x;
@@ -152,176 +140,91 @@ export function repelPointFromExpositionObstacles(
   let z = vec3.z;
   const m = Math.max(1.5, extraMargin);
 
-  // 1. Champ-de-Mars Striped Promenade Awnings (`|x| in [33.85, 39.75]`, `z in [184, 548]`, `topY = 4.46 m`)
-  if (z >= 184.0 - m && z <= 548.0 + m) {
-    const ax = Math.abs(x);
-    const xLo = 33.85 - m;
-    const xHi = 39.75 + m;
-    const reqY = 4.46 + m;
-    if (ax >= xLo && ax <= xHi && y < reqY) {
-      if (preferAerialLift || y >= 2.8) {
-        y = reqY;
-      } else {
-        const sx = x >= 0 ? 1 : -1;
-        x = sx * (ax < 36.8 ? xLo : xHi);
-      }
-      changed = true;
-    }
-  }
-
-  // 2. Optional Tree Crown Clearance during flights (Champ-de-Mars chestnut alleys & discrete Quai d'Orsay trees)
-  if (avoidTrees) {
-    const ax = Math.abs(x);
-    if (z >= 92.0 && z <= 556.0 && ax >= 46.5 && ax <= 85.5 && y < 13.0) {
-      y = 13.0;
-      changed = true;
-    }
-    // Quai d'Orsay trees stand at discrete 28m intervals (x = +-28, +-56, +-84, ..., z = -119.2, crown r ~ 4.4m);
-    // only clear actual tree crowns rather than treating the open boulevard gaps as a solid 13.5m wall.
-    if (z >= -124.2 && z <= -114.2 && ax >= 23.0 && y < 13.2) {
-      const nearestTreeX = Math.max(28.0, Math.round(ax / 28.0) * 28.0);
-      const distTree = Math.hypot(ax - nearestTreeX, z + 119.2);
-      if (distTree < 5.2) {
-        if (preferAerialLift && y >= 5.5) {
-          y = 13.2;
-        } else {
-          const sx = x >= 0 ? 1 : -1;
-          const dxTree = ax - nearestTreeX;
-          const pushX = dxTree < 0 ? nearestTreeX - 5.4 : nearestTreeX + 5.4;
-          x = sx * pushX;
-        }
-        changed = true;
-      }
-    }
-  }
-
-  // 2b. Quai d'Orsay Exposition Riverfront Galleries & Ribbed Corner Pavilions (`|x| in [101, 211]`, `z in [-121.5, -102.5]`, `topY = 20.2 m`)
-  if (z >= -121.5 - m && z <= -102.5 + m) {
-    const ax = Math.abs(x);
-    const xLo = 101.0 - m;
-    const xHi = 211.0 + m;
-    const reqY = (ax < 118.0 ? 20.4 : 15.6) + m;
-    if (ax >= xLo && ax <= xHi && y < reqY) {
+  // 1. Milad International Convention Center: center (-88, 56), rotation.y = 0.42 rad
+  //    Lower podium: 68 x 46 (y: 0..12 m), upper crown: 56 x 36 (y: 12..20.4 m)
+  {
+    const cx = -88.0;
+    const cz = 56.0;
+    const cosA = Math.cos(0.42);
+    const sinA = Math.sin(0.42);
+    const dx = x - cx;
+    const dz = z - cz;
+    const lx = dx * cosA - dz * sinA;
+    const lz = dx * sinA + dz * cosA;
+    const hx = (y > 12.0 ? 28.0 : 34.0) + m;
+    const hz = (y > 12.0 ? 18.0 : 23.0) + m;
+    const reqY = (Math.abs(lx) < 28.0 + m && Math.abs(lz) < 18.0 + m ? 20.4 : 12.0) + m;
+    if (Math.abs(lx) < hx && Math.abs(lz) < hz && y < reqY) {
       if (preferAerialLift || y >= 9.0) {
         y = reqY;
       } else {
-        const sx = x >= 0 ? 1 : -1;
-        x = sx * (ax < 156.0 ? xLo : xHi);
-      }
-      changed = true;
-    }
-  }
-
-  // 3. 1889 Fontaine Coutan (`(0, 155)`, `rx = 15.8`, `rz = 22.5`, `topY = 13.0 m`)
-  {
-    const rx = 15.8 + m;
-    const rz = 22.5 + m;
-    const dz = z - 155.0;
-    const q = (x * x) / (rx * rx) + (dz * dz) / (rz * rz);
-    const reqY = 13.0 + m;
-    if (q < 1.0 && y < reqY) {
-      if (preferAerialLift || y >= 7.5) {
-        y = reqY;
-      } else if (q > 1e-6) {
-        const s = 1.0 / Math.sqrt(q);
-        x *= s;
-        z = 155.0 + dz * s;
-      } else {
-        x = rx;
-      }
-      changed = true;
-    }
-  }
-
-  // 4. Palais des Beaux-Arts (+X) & Palais des Arts Libéraux (-X)
-  //    `|x| in [95.6, 151.1]`, `z in [195.4, 484.6]`, wing/Mansard roof `26.0 m`, central Formigé cupola (`z=340`) `37.0 m`
-  if (z >= 195.4 - m && z <= 484.6 + m) {
-    const ax = Math.abs(x);
-    const xLo = 95.6 - m;
-    const xHi = 151.1 + m;
-    if (ax >= xLo && ax <= xHi) {
-      const zCupolaDist = (z - 340.0) / 38.0;
-      const roofTop = 26.2 + 11.2 * Math.exp(-zCupolaDist * zCupolaDist);
-      const reqY = roofTop + m;
-      if (y < reqY) {
-        if (preferAerialLift || y >= 18.0 || ax >= 123.5) {
-          y = reqY;
+        const penX = hx - Math.abs(lx);
+        const penZ = hz - Math.abs(lz);
+        let nlx = lx;
+        let nlz = lz;
+        if (penX < penZ) {
+          nlx = (lx >= 0 ? 1 : -1) * hx;
         } else {
-          const sx = x >= 0 ? 1 : -1;
-          x = sx * xLo;
+          nlz = (lz >= 0 ? 1 : -1) * hz;
         }
-        changed = true;
+        x = cx + nlx * cosA + nlz * sinA;
+        z = cz - nlx * sinA + nlz * cosA;
       }
+      changed = true;
     }
   }
 
-  // 5. Monumental Dôme Central & Galerie des Machines (`z >= 580`, `|x| <= 212`, `topY = 70.6 m`)
-  if (z > 580.0 - m && Math.abs(x) < 212.0 + m && y < 71.0 + m) {
-    z = 580.0 - m;
-    changed = true;
+  // 2. East Cultural Gallery Wing: center (86, 52), rotation.y = -0.38 rad, 47 x 31 (y: 0..10.7 m)
+  {
+    const cx = 86.0;
+    const cz = 52.0;
+    const cosA = Math.cos(-0.38);
+    const sinA = Math.sin(-0.38);
+    const dx = x - cx;
+    const dz = z - cz;
+    const lx = dx * cosA - dz * sinA;
+    const lz = dx * sinA + dz * cosA;
+    const hx = 23.5 + m;
+    const hz = 15.5 + m;
+    const reqY = 10.7 + m;
+    if (Math.abs(lx) < hx && Math.abs(lz) < hz && y < reqY) {
+      if (preferAerialLift || y >= 5.5) {
+        y = reqY;
+      } else {
+        const penX = hx - Math.abs(lx);
+        const penZ = hz - Math.abs(lz);
+        let nlx = lx;
+        let nlz = lz;
+        if (penX < penZ) {
+          nlx = (lx >= 0 ? 1 : -1) * hx;
+        } else {
+          nlz = (lz >= 0 ? 1 : -1) * hz;
+        }
+        x = cx + nlx * cosA + nlz * sinA;
+        z = cz - nlx * sinA + nlz * cosA;
+      }
+      changed = true;
+    }
   }
 
-  // 6. Parvis Twin Ornamental Basins (`(+-55.5, -75.5)`, `r = 7.9`, `topY = 6.6 m`)
+  // 3. Southern Reflecting Pools: (±24, 72), 15 x 52 (y: 0..0.66 m)
   {
     const sx = x >= 0 ? 1 : -1;
-    const dx = x - sx * 55.5;
-    const dz = z + 75.5;
-    const d = Math.hypot(dx, dz);
-    const reqR = 7.9 + m;
-    const reqY = 6.6 + m;
-    if (d < reqR && y < reqY) {
-      if (preferAerialLift || y >= 4.0) {
-        y = reqY;
-      } else if (d > 1e-4) {
-        const s = reqR / d;
-        x = sx * 55.5 + dx * s;
-        z = -75.5 + dz * s;
-      } else {
-        x = sx * (55.5 + reqR);
-      }
-      changed = true;
-    }
-  }
-
-  // 7. Trocadéro Lower Park Pavilions (`|x| in [27, 53]`, `z in [-413, -321]`, `topY = 16.5 m`)
-  if (z >= -413.0 - m && z <= -321.0 + m) {
-    const ax = Math.abs(x);
-    const xLo = 27.0 - m;
-    const xHi = 53.0 + m;
-    const reqY = 16.5 + m;
-    if (ax >= xLo && ax <= xHi && y < reqY) {
+    const dx = x - sx * 24.0;
+    const dz = z - 72.0;
+    const hx = 7.5 + m;
+    const hz = 26.0 + m;
+    const reqY = 0.66 + Math.max(2.0, m * 0.6);
+    if (Math.abs(dx) < hx && Math.abs(dz) < hz && y < reqY) {
       y = reqY;
       changed = true;
     }
   }
 
-  // 8. Outer Left-Bank Haussmannian Apartment Districts (`w_champ_de_mars.js:300-319`: inner walls protrude to `|x| = 234.2 m` across `z in [-128.3, 625]`, `topY ~ 26.8 m`)
-  if (z >= -132.0 && z <= 625.0 && Math.abs(x) > 232.0 - m && y < 27.5 + m) {
-    if (preferAerialLift || y >= 18.0) {
-      y = 27.5 + m;
-    } else {
-      x = (x >= 0 ? 1 : -1) * (232.0 - m);
-    }
-    changed = true;
-  }
-
-  // 9. Right-Bank Haussmannian Districts (`w_champ_de_mars.js:320-321`: inner walls protrude to `|x| = 246.3 m` for `z <= -282`, `topY ~ 33.2 m`)
-  if (z <= -278.0 && Math.abs(x) > 244.0 - m && y < 33.5 + m) {
-    if (preferAerialLift || y >= 22.0) {
-      y = 33.5 + m;
-    } else {
-      x = (x >= 0 ? 1 : -1) * (244.0 - m);
-    }
-    changed = true;
-  }
-
-  // 10. Trocadéro Semicircular Colonnade Wings & Pavilions (`w_trocadero.js:200-219`: `z <= -516`, `topY ~ 42.5 m`)
-  if (z <= -516.0 + m && y < 43.0 + m) {
-    if (preferAerialLift || y >= 28.0) {
-      y = 43.0 + m;
-    } else {
-      z = -516.0 + m;
-    }
+  // 4. Local Terrain Floor Clearance
+  const groundMinY = localGroundElevation(x, z) + 2.0;
+  if (y < groundMinY) {
+    y = groundMinY;
     changed = true;
   }
 
@@ -515,9 +418,8 @@ export function createViewportConstraints({
     }
 
     if (
-      repelPointFromExpositionObstacles(camera.position, {
+      repelPointFromTehranObstacles(camera.position, {
         extraMargin: 3.5,
-        avoidTrees: false,
         preferAerialLift: false,
       })
     ) {
@@ -533,7 +435,7 @@ export function createViewportConstraints({
       lastFlags.distMax = true;
     }
 
-    // Re-verify terrain clearance at final XZ (e.g. NW Chaillot hill terraces)
+    // Re-verify terrain clearance at final XZ (Gisha slope / basin rim)
     const exactMinY = minAllowedCameraY(camera.position.x, camera.position.z);
     if (camera.position.y < exactMinY) {
       camera.position.y = exactMinY;
@@ -563,9 +465,8 @@ export function createViewportConstraints({
           extraMargin: 4.5,
           enforceInnerEsplanadeExclusion: true,
         });
-        repelPointFromExpositionObstacles(camera.position, {
+        repelPointFromTehranObstacles(camera.position, {
           extraMargin: 3.5,
-          avoidTrees: false,
           preferAerialLift: true,
         });
       }
@@ -575,7 +476,7 @@ export function createViewportConstraints({
     // -------------------------------------------------------------------------
     // 5. Strict Anti-Outward-Gaze Guard (XZ Yaw Relative to Tower Spine)
     //    Ensures the camera never looks past an off-center target outward into
-    //    surrounding low-poly Paris blocks.
+    //    surrounding low-poly Tehran urban blocks.
     // -------------------------------------------------------------------------
     const finalAxisR = Math.hypot(camera.position.x, camera.position.z);
     if (finalAxisR > 1e-3) {
@@ -774,7 +675,7 @@ export function runAdversarialConstraintFuzz({
   const savedEnabled = controls.enabled;
 
   // Deterministic Mulberry32 PRNG
-  let seed = 0x18890331;
+  let seed = 0x20081007;
   const rand = () => {
     let t = (seed += 0x6d2b79f5);
     t = Math.imul(t ^ (t >>> 15), t | 1);
@@ -809,14 +710,14 @@ export function runAdversarialConstraintFuzz({
   const explicitAttacks = [
     // 1. Subterranean plunge under Tower center
     { cam: [0, -120, 40], tgt: [0, -50, 0] },
-    // 2. Chaillot hill NW underground plunge (ground is +24 m at Z = -700)
-    { cam: [-40, 5, -550], tgt: [0, 30, 0] },
-    // 3. Inside esplanade looking radially OUTWARD away from Tower into Paris blocks
+    // 2. Northern slope underground plunge
+    { cam: [-40, -15, -250], tgt: [0, 30, 0] },
+    // 3. Inside plaza looking radially OUTWARD away from Tower into Tehran urban blocks
     { cam: [10, 12, 10], tgt: [180, 12, 180] },
-    // 4. Directly inside Pile 2 (Est) masonry & iron rafters
-    { cam: [48, 8, 48], tgt: [0, 40, 0] },
-    // 5. Directly inside Pile 4 (Ouest) at 30m height
-    { cam: [-38, 30, -38], tgt: [0, 55, 0] },
+    // 4. Directly inside lower lobby foundation zone
+    { cam: [20, 8, 20], tgt: [0, 40, 0] },
+    // 5. Directly inside lower concrete shaft collar at 30m height
+    { cam: [-12, 30, -12], tgt: [0, 55, 0] },
     // 6. Directly inside upper shaft at 180m
     { cam: [2, 180, 2], tgt: [0, 200, 0] },
     // 7. Extreme 2500m zoom-out beyond mist wall
@@ -876,10 +777,10 @@ export function runAdversarialConstraintFuzz({
     if (axisR > maxRecordedAxisR) maxRecordedAxisR = axisR;
     if (structClear < minRecordedStructuralClearance) minRecordedStructuralClearance = structClear;
 
-    if (cy < 1.85 - 1e-4 || cy < groundY + 1.65 - 1e-4) {
+    if (cy < -20.0 - 1e-4 || cy < groundY + 1.65 - 1e-4) {
       undergroundViolations++;
     }
-    if (dist > 556.0 || axisR > 556.0) {
+    if (dist > 981.0 || axisR > 981.0) {
       worldEdgeViolations++;
     }
     if (structClear < -0.1) {

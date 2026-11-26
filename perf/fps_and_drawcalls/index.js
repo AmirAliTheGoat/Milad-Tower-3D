@@ -87,14 +87,14 @@ export function installRuntimeFpsAndDrawCallOptimizations({
     optimizeTriplanarTaps,
   });
 
-  // 3. Cull deep subterranean caisson shadow casters (`max.y <= -6.6 m`) BEFORE zone batching
+  // 3. Cull deep subterranean shadow casters strictly below Milad's -14 m excavation pit BEFORE zone batching
   const deepCaissonShadowStats = cullDeepSubterraneanShadowCasters({
     THREE,
     towerController,
-    maxWorldY: -6.6,
+    maxWorldY: -14.2,
   });
 
-  // 4. Cull distant Paris shadow casters (`> 195 m`) & merge static Paris/Exposition meshes
+  // 4. Cull distant Tehran shadow casters (`> 195 m`) & merge static world meshes
   const parisBatchStats = optimizeParisWorldMeshes({
     THREE,
     parisWorld,

@@ -1,73 +1,41 @@
 /**
- * Two-Level Tower & Paris 1889 Static Mesh Batcher
+ * Two-Level Milad Tower & Tehran World Static Mesh Batcher
  * (`perf/fps_and_drawcalls/mesh_batch_optimizer.js`)
  *
- * Pure zero-dependency ES module (no external `BufferGeometryUtils` required) that dramatically
- * cuts WebGL main-pass and shadow-pass draw calls while preserving geometric, kinematic, PnP,
- * PBR, and diagnostic-audit invariants:
+ * Cuts WebGL main-pass and shadow-pass draw calls while preserving geometric, kinematic,
+ * lighting, PBR, sketch/fog, and diagnostic-audit invariants:
  *
  *   1. **Level 1 — In-Place Intra-Piece & Intra-Subrig Static Merging**:
  *      Merges static leaf `THREE.Mesh`es sharing `(material, castShadow, receiveShadow,
- *      renderOrder, isWoodDecking, hasVertexColor)` inside each of the 159 Tower pieces
- *      (e.g. collapsing `z5_stairs_1889_all` from `115` meshes to `10` meshes in-place and
- *      disposing replaced small geometries) while keeping every articulated rig node
- *      (`optic`, `anemometer`, `flag`, elevator carriages/bogies/counterweights/rams/cables,
- *      and climbing/creeper crane pivots) 100% independent.
- *
+ *      renderOrder, isWoodDecking, hasVertexColor)` inside each Milad Tower piece while keeping
+ *      articulated rig nodes (`milad_revolving_restaurant_ring`, `milad_elevator_cabin_*`, and
+ *      temporary crane rigs) independent.
  *   2. **Level 2 — Settled-Zone Static Fast-Path Batches (`zone1..zone5`)**:
- *      Builds non-overlapping static settled batches inside each `zone.group` (splitting
- *      `zone2` and `zone3` into early-settled structural Stage-1/Stage-2 sub-batches +
- *      late-settled 1889 finishing sub-batches so BOTH Beat-B construction flights AND
- *      `step = 11.0` benefit without duplicating VBO memory!).
- *      - Automatically activates a settled batch when `step >= settleStep` and all member
- *        pieces are visible, unclipped, and at canonical rest (`sourceMesh.visible = false`
- *        while `piece.object3D.visible` stays `true`), and seamlessly falls back to
- *        per-piece meshes whenever `step < settleStep`!
- *      - Excludes Floor-1 restaurant pavilions (`z2_pavilions_restaurants_1889_p9`), animated summit
- *        pieces (`phare`, `terrace300`, `flag`), and moving `zone5` elevator rigs (`z5_cabin*`)
- *        so spinning summit instruments, waving flag, and elevator kinematics work natively.
- *      - Preserves exact `visiblePieceCount` (`148`), `triangleCount` (`3,176,054`),
- *        `vertexCount` (`7,033,677`), `bbox`, `setZoneVisibility`, and `setRenderMode`.
- *
- *   3. **Paris 1889 Cross-Group Static Merging & Shadow-Frustum Splitting**:
- *      Merges permanent static architectural/ground `Mesh`es across `parvis_seine_iena`,
- *      `trocadero_chaillot`, and `champ_de_mars_paris` (and across shared-step Exposition
- *      groups `step >= 7.5` and `step >= 8.5`), splitting near-Tower shadow casters
+ *      Builds non-overlapping static settled batches inside `zone1..zone4`, excluding
+ *      rotating restaurant ring (`z3_head_revolving_restaurant`), panoramic lifts (`z5_panoramic_elevators`),
+ *      and temporary cranes with `vanishSpan`.
+ *   3. **Tehran World Cross-Group Static Merging & Shadow-Frustum Splitting**:
+ *      Merges permanent static architectural/road `Mesh`es across `tehran_gisha_alborz`,
+ *      `tehran_expressways`, and `tehran_urban_blocks`, splitting near-Tower shadow casters
  *      (`horizDist <= 195 m`) from distant horizon geometry (`castShadow = false`) while
- *      leaving all `InstancedMesh`es (`worldObbChecker`), `LineSegments` (`sketchEdgeGroups`),
- *      `seine_river_pbr`, `world_basin_water`, and animated `backfillGroups` untouched.
+ *      leaving `InstancedMesh`es, `LineSegments`, `tehran_terrain_mesh`, `alborz_mountain_range`,
+ *      and `world_basin_water` untouched.
  */
 
 const DYNAMIC_TOWER_NODE_NAMES = new Set([
-  'z4_fresnel_optic',
-  'z4_robinson_anemometer',
-  'z4_flag_tricolore_1889',
-  'edoux_kinematic_wrapper',
-  'edoux_cabine_superieure_Ca2',
-  'edoux_cabine_inferieure_Ca1',
-  'edoux_top_sheave_cables',
-  'upper_shaft_climbing_rig',
-  'upper_crane_boom_N',
-  'upper_crane_boom_S',
-  'upper_crane_hoist_N',
-  'upper_crane_hoist_S',
+  'milad_revolving_restaurant_ring',
+  'z3_head_revolving_restaurant',
+  'z5_panoramic_elevators',
+  'z5_temp_excavation_cranes',
+  'z5_temp_slipform_collar',
+  'z5_temp_head_cranes',
 ]);
 
 function isDynamicArticulatedNode(obj) {
   if (!obj) return false;
   const name = obj.name || '';
   if (DYNAMIC_TOWER_NODE_NAMES.has(name)) return true;
-  if (
-    name.startsWith('cabin_carriage_pile_') ||
-    name.startsWith('bogie_pile_') ||
-    name.startsWith('cabin_body_pile_') ||
-    name.startsWith('otis_cwt_pile_') ||
-    name.startsWith('otis_chariot_pile_') ||
-    name.startsWith('creeper_crane_carriage_pile_') ||
-    name.startsWith('creeper_base_pile_') ||
-    name.startsWith('creeper_slew_pile_') ||
-    name.startsWith('creeper_slew_mesh_pile_')
-  ) {
+  if (name.startsWith('milad_elevator_cabin_')) {
     return true;
   }
   return false;
@@ -79,11 +47,8 @@ function isSettledBatchExcludedPiece(piece) {
   if (Array.isArray(piece.vanishSpan) && piece.vanishSpan.length === 2) return true;
   const id = String(piece.id || '');
   if (
-    id === 'z2_pavilions_restaurants_1889_p9' || // dynamic Floor-1 pavilion piece
-    id === 'z4_phare_lantern_coupole' || // contains rotating Fresnel optic
-    id === 'z4_terrace300_paratonnerre' || // contains rotating Robinson anemometer
-    id === 'z4_flag_tricolore_1889' || // deforming vertex wave mesh
-    id.startsWith('z5_cabin') // articulated elevator carriages / counterweights / rams
+    id === 'z3_head_revolving_restaurant' || // rotating panoramic restaurant ring
+    id === 'z5_panoramic_elevators' // animated elevator cabins
   ) {
     return true;
   }
@@ -346,10 +311,6 @@ function mergeStaticSubtreeInPlace(THREE, containerRoot, matIds, disposedGeomsCo
         child.material &&
         !Array.isArray(child.material)
       ) {
-        // Never merge direct dynamic ram/cable meshes attached straight onto `edoux_kinematic_wrapper`
-        if (containerRoot.name === 'edoux_kinematic_wrapper' && child.parent === containerRoot) {
-          continue;
-        }
         outMeshes.push(child);
       }
       if (child.children && child.children.length > 0) {
@@ -422,7 +383,7 @@ function mergeStaticSubtreeInPlace(THREE, containerRoot, matIds, disposedGeomsCo
 }
 
 /**
- * Optimizes all 5 Eiffel Tower zones via Level-1 intra-piece static merging +
+ * Optimizes all 5 Milad Tower zones via Level-1 intra-piece static merging +
  * Level-2 non-overlapping settled-zone static batches.
  */
 export function optimizeTowerMeshesAndZones({ THREE, towerController } = {}) {
@@ -445,7 +406,7 @@ export function optimizeTowerMeshesAndZones({ THREE, towerController } = {}) {
   const disposedGeomsCounter = { count: 0 };
   let intraPieceMeshesRemoved = 0;
 
-  // 1. Level 1: Intra-Piece & Intra-Subrig Static Merging across all 159 pieces
+  // 1. Level 1: Intra-Piece & Intra-Subrig Static Merging across pieces
   for (let i = 0; i < towerController.pieces.length; i++) {
     const p = towerController.pieces[i];
     if (!p?.object3D) continue;
@@ -480,33 +441,26 @@ export function optimizeTowerMeshesAndZones({ THREE, towerController } = {}) {
     }
   }
 
-  // 2. Level 2: Non-Overlapping Settled Static Sub-Batches per Zone
-  //    Splitting `zone2` (<= 5.30 vs > 5.30) and `zone3` (<= 5.79 vs > 5.79) accelerates BOTH
-  //    mid-construction Beat-B flights AND `step = 11.0` with zero duplicate VBO memory!
+  // 2. Level 2: Non-Overlapping Settled Static Sub-Batches per Zone (Milad 1997–2008 spans)
   const settledBatches = [];
   const ZONE_SUBBATCH_SPLITS = {
     zone1: [
-      { tag: 'foundations_plinths', maxSpanEnd: 1.505 },
-      { tag: 'piers_s1', minSpanEndExcl: 1.505, maxSpanEnd: 3.605 },
-      { tag: 'finishings_1889', minSpanEndExcl: 3.605, maxSpanEnd: Infinity },
+      { tag: 'excavation_and_mat', maxSpanEnd: 1.40 },
+      { tag: 'lobby_core', minSpanEndExcl: 1.40, maxSpanEnd: Infinity },
     ],
     zone2: [
-      { tag: 'structural_s1', maxSpanEnd: 5.505 },
-      { tag: 'finishings_1889', minSpanEndExcl: 5.505, maxSpanEnd: Infinity },
+      { tag: 'shaft_lower', maxSpanEnd: 3.15 },
+      { tag: 'shaft_upper', minSpanEndExcl: 3.15, maxSpanEnd: Infinity },
     ],
     zone3: [
-      { tag: 'structural_s2', maxSpanEnd: 5.655 },
-      { tag: 'merger_upper', minSpanEndExcl: 5.655, maxSpanEnd: 6.22 },
-      { tag: 'finishings_1889', minSpanEndExcl: 6.22, maxSpanEnd: Infinity },
+      { tag: 'head_lower_steel', maxSpanEnd: 6.15 },
+      { tag: 'head_cladding_decks', minSpanEndExcl: 6.15, maxSpanEnd: Infinity },
     ],
     zone4: [
-      { tag: 'shaft_p19_p21', maxSpanEnd: 6.51 },
-      { tag: 'summit_static', minSpanEndExcl: 6.51, maxSpanEnd: Infinity },
+      { tag: 'antenna_stages', maxSpanEnd: 8.85 },
+      { tag: 'sky_dome', minSpanEndExcl: 8.85, maxSpanEnd: Infinity },
     ],
-    zone5: [
-      { tag: 'tracks_and_guides', maxSpanEnd: 7.70 },
-      { tag: 'stairs_and_machinery', minSpanEndExcl: 7.70, maxSpanEnd: Infinity },
-    ],
+    zone5: [],
   };
 
   for (const [slot, zoneRec] of towerController.zones.entries()) {
@@ -712,11 +666,10 @@ function minHorizDistanceToOrigin(THREE, mesh) {
 }
 
 /**
- * Merges static regular `Mesh`es across `parisWorld` permanent top-level groups and shared-step
- * Exposition groups, and disables `castShadow` on distant meshes outside the `[-102..+102]`
- * Tower shadow-camera frustum (`minHorizDist > 195 m`).
+ * Merges static regular `Mesh`es across `parisWorld` permanent top-level Tehran groups and disables
+ * `castShadow` on distant meshes outside the Tower shadow-camera frustum (`minHorizDist > 195 m`).
  * Leaves all `InstancedMesh`es (`worldObbChecker`), `LineSegments` (`sketchEdgeGroups`),
- * `seine_river_pbr`, `world_basin_water`, and dynamic `backfillGroups` 100% untouched.
+ * `tehran_terrain_mesh`, `alborz_mountain_range`, and `world_basin_water` untouched.
  */
 export function optimizeParisWorldMeshes({ THREE, parisWorld, shadowRadiusLimitM = 195.0 } = {}) {
   if (!THREE || !parisWorld?.group) return null;
@@ -730,7 +683,7 @@ export function optimizeParisWorldMeshes({ THREE, parisWorld, shadowRadiusLimitM
   let shadowCastersCulled = 0;
   let meshesMergedAway = 0;
 
-  // 1. Cull `castShadow` on Paris meshes wholly outside the sunLight shadow camera frustum
+  // 1. Cull `castShadow` on distant world meshes wholly outside the sunLight shadow camera frustum
   root.traverse((obj) => {
     if (!obj.isMesh || obj.isInstancedMesh) return;
     if (obj.castShadow) {
@@ -742,11 +695,11 @@ export function optimizeParisWorldMeshes({ THREE, parisWorld, shadowRadiusLimitM
     }
   });
 
-  const isEligibleParisStaticMesh = (m) => {
+  const isEligibleTehranStaticMesh = (m) => {
     if (!m || !m.isMesh || m.isInstancedMesh) return false;
     if (!m.geometry || !m.material || Array.isArray(m.material)) return false;
     if (m.material.isShaderMaterial) return false;
-    if (m.name === 'seine_river_pbr') return false;
+    if (m.name === 'tehran_terrain_mesh' || m.name === 'alborz_mountain_range') return false;
     if (m.material.name === 'world_basin_water') return false;
     return true;
   };
@@ -754,7 +707,7 @@ export function optimizeParisWorldMeshes({ THREE, parisWorld, shadowRadiusLimitM
   const mergeMeshListIntoGroup = (meshes, targetGroup, labelPrefix) => {
     const buckets = new Map();
     for (const m of meshes) {
-      if (!isEligibleParisStaticMesh(m)) continue;
+      if (!isEligibleTehranStaticMesh(m)) continue;
       const key = makeBatchKey(m, matIds);
       let list = buckets.get(key);
       if (!list) {
@@ -785,86 +738,26 @@ export function optimizeParisWorldMeshes({ THREE, parisWorld, shadowRadiusLimitM
     }
   };
 
-  // 2. Merge direct permanent `Mesh` children across the 3 permanent top-level groups:
-  //    `parvis_seine_iena`, `trocadero_chaillot`, `champ_de_mars_paris`
-  const permTopNames = new Set(['parvis_seine_iena', 'trocadero_chaillot', 'champ_de_mars_paris']);
+  // 2. Merge direct permanent `Mesh` children across the 3 permanent Tehran top-level groups:
+  //    `tehran_gisha_alborz`, `tehran_expressways`, `tehran_urban_blocks`
+  const permTopNames = new Set([
+    'tehran_gisha_alborz',
+    'tehran_expressways',
+    'tehran_urban_blocks',
+  ]);
   const permanentDirectMeshes = [];
   for (const topChild of root.children) {
     if (topChild.isGroup && permTopNames.has(topChild.name)) {
       for (const sub of topChild.children) {
-        if (isEligibleParisStaticMesh(sub)) {
+        if (isEligibleTehranStaticMesh(sub)) {
           permanentDirectMeshes.push(sub);
         }
       }
-    } else if (isEligibleParisStaticMesh(topChild)) {
+    } else if (isEligibleTehranStaticMesh(topChild)) {
       permanentDirectMeshes.push(topChild);
     }
   }
-  mergeMeshListIntoGroup(permanentDirectMeshes, root, 'paris_perm_merged');
-
-  // 3. Merge static meshes across Exposition groups sharing identical step visibility thresholds
-  const findNamedGroups = (namesSet) => {
-    const found = [];
-    root.traverse((o) => {
-      if (o.isGroup && namesSet.has(o.name)) found.push(o);
-    });
-    return found;
-  };
-
-  const step75Groups = findNamedGroups(
-    new Set(['cdm_parterre_gardens', 'cdm_palais_wings', 'trocadero_expo_pavilions'])
-  );
-  const step85Groups = findNamedGroups(
-    new Set(['cdm_coutan_fountain', 'parvis_1889_pavilions'])
-  );
-
-  let sharedStep75Batch = null;
-  if (step75Groups.length >= 2) {
-    const meshes75 = [];
-    for (const g of step75Groups) {
-      for (const c of g.children) {
-        if (isEligibleParisStaticMesh(c)) meshes75.push(c);
-      }
-    }
-    if (meshes75.length >= 2) {
-      sharedStep75Batch = new THREE.Group();
-      sharedStep75Batch.name = 'paris_shared_step75_batch';
-      root.add(sharedStep75Batch);
-      sharedStep75Batch.updateMatrixWorld(true);
-      mergeMeshListIntoGroup(meshes75, sharedStep75Batch, 'paris_s75');
-      // Move any unmerged singleton eligible meshes back or leave them in their original step75Groups!
-      // (`mergeMeshListIntoGroup` ONLY touches buckets with `list.length >= 2`, so singletons stay in place!)
-    }
-  }
-
-  let sharedStep85Batch = null;
-  if (step85Groups.length >= 2) {
-    const meshes85 = [];
-    for (const g of step85Groups) {
-      for (const c of g.children) {
-        if (isEligibleParisStaticMesh(c)) meshes85.push(c);
-      }
-    }
-    if (meshes85.length >= 2) {
-      sharedStep85Batch = new THREE.Group();
-      sharedStep85Batch.name = 'paris_shared_step85_batch';
-      root.add(sharedStep85Batch);
-      sharedStep85Batch.updateMatrixWorld(true);
-      mergeMeshListIntoGroup(meshes85, sharedStep85Batch, 'paris_s85');
-    }
-  }
-
-  if (sharedStep75Batch || sharedStep85Batch) {
-    const origSetStep = parisWorld.setStep.bind(parisWorld);
-    parisWorld.setStep = (step = 11.0) => {
-      const s = Number.isFinite(Number(step)) ? Number(step) : 11.0;
-      origSetStep(s);
-      if (sharedStep75Batch) sharedStep75Batch.visible = s >= 7.5;
-      if (sharedStep85Batch) sharedStep85Batch.visible = s >= 8.5;
-    };
-    const curStep = parisWorld.getMetrics?.()?.step ?? 11.0;
-    parisWorld.setStep(curStep);
-  }
+  mergeMeshListIntoGroup(permanentDirectMeshes, root, 'tehran_perm_merged');
 
   const state = {
     meshesMergedAway,

@@ -12,16 +12,14 @@
  */
 
 export const CALIBRATED_PNP_STEPS = Object.freeze([
-  0.50, // Stop 02 — 1997–1999: 14 m Circular Seismic Excavation
-  1.40, // Stop 03 — 1999–2000: 66 m Concrete Foundation Mat & Transition Pedestal
-  3.15, // Stop 04 — 2000–2002: Slip-Forming the 8-Lobed Concrete Shaft
-  4.75, // Stop 05 — 2002–2003: 315 m Shaft Top-Out & 6-Story Base Lobby
-  6.15, // Stop 06 — 2003–2005: Heavy-Lift 12-Story Steel Head Structure
-  7.05, // Stop 07 — 2005–2006: Faceted Iranian Basket Cladding (60 m Span)
-  8.85, // Stop 08 — 2006–2007: 120 m Four-Stage Telescopic Steel Antenna Mast
-  9.85, // Stop 09 — 2007–2008: 276 m Revolving Restaurant & 280/292 m Decks
-  10.60, // Stop 10 — 2008: 315 m Glass Sky Dome & 7 m/s Panoramic Elevators
-  11.0, // Stops 01, 11, 12 — Complete 435 m Milad Tower (7 Oct 2008 Inauguration)
+  0.50, // Stop 01 — 1997–1999: 14 m Circular Seismic Excavation
+  1.05, // Stop 02 — 1999: 66 m Foundation Mat & Circular Rebar Cage
+  1.45, // Stop 03 — 1999–2000: Conical Transition Pedestal & 16 Radial Buttresses
+  3.15, // Stop 04 — 2000–2002: Climbing Slip-Form 8-Lobed Concrete Shaft
+  4.75, // Stop 05 — 2002–2003: 315 m Shaft Top-Out Aerial
+  6.18, // Stop 06 — 2003–2005: Exposed Base V-Struts & Steel Head Diagrid
+  7.45, // Stop 07 — 2006: Bolted Steel Antenna Collar Atop 315 m Deck
+  11.0, // Stops 08 & 09 — 7 Oct 2008 Inauguration & Complete 435 m 3D Tower
 ]);
 
 export const MECHANISM_FAMILIES = Object.freeze({
@@ -63,7 +61,7 @@ export function classifyPieceMechanism(piece) {
   if (cat === 'temporary_crane' || cat === 'temporary_falsework' || id.startsWith('z5_temp_')) {
     return MECHANISM_FAMILIES.TEMPORARY_CRANE_RIGGING;
   }
-  if (id.includes('excavation') || id.includes('foundation_mat')) {
+  if (id.includes('excavation') || id.includes('foundation_mat') || id.includes('transition_pedestal')) {
     return MECHANISM_FAMILIES.EXCAVATION_CUT;
   }
   if (id.startsWith('z2_shaft_tier_')) {

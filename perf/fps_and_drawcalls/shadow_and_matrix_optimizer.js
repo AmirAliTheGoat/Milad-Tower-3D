@@ -1,71 +1,43 @@
 /**
- * Smart Shadow Policy, Deep Caisson Shadow Culling & Static Scene-Graph Matrix Optimizer
+ * Smart Shadow Policy, Deep Excavation Shadow Culling & Static Scene-Graph Matrix Optimizer
  * (`perf/fps_and_drawcalls/shadow_and_matrix_optimizer.js`)
  *
- * Eliminates redundant 4096×4096 / 1024×1024 shadow-map passes and per-frame world-matrix
- * traversals across static Paris 1889 and settled Eiffel Tower subtrees while preserving
- * shadow fidelity, PnP resting alignment, and mood/sun transitions:
+ * Eliminates redundant shadow-map passes and per-frame world-matrix traversals across
+ * static Tehran world and settled Milad Tower subtrees while preserving shadow fidelity,
+ * construction resting alignment, and mood/sun transitions:
  *
- *   1. **Lossless Deep-Subterranean Shadow Caster Culling (`max.y <= -6.6 m`)**:
- *      Disables `castShadow` on Tower foundation geometry strictly beneath the `y = -6.5 m`
- *      excavation pit floor (run BEFORE zone batching so underground caissons never bloat
- *      above-ground shadow-casting VBOs, while keeping open-pit Stop 02 `#13` shadows intact).
+ *   1. **Lossless Deep-Subterranean Shadow Caster Culling (`max.y <= -14.2 m`)**:
+ *      Disables `castShadow` on Tower geometry strictly beneath the `y = -14.0 m`
+ *      excavation pit floor while keeping open-pit Stop 02 excavation shadows intact.
  *
  *   2. **Authoritative Smart Shadow Update Policy (`scene.onBeforeRender` Gatekeeper)**:
- *      - Suppresses redundant `atmosphere.requestShadowUpdate()` calls on `Stop 09 -> 10 -> 11 -> 12`
- *        and Free Orbit when `step === 11.0`, `sunLight` state, `cutaway`, `zoneVisMask`, and
- *        `renderMode` are unchanged (`0` wasted shadow passes across Hero Showcase & completed flights).
- *      - During continuous Beat-B construction flights (`step 0.55 -> 6.52 -> 11.0`), refreshes
- *        shadows at every calibrated PnP step (`0.55, 1.50, 3.55, 3.60, 4.85, 5.66, 6.52, 11.0`),
- *        every Paris Exposition step boundary (`1.15, 1.28, 1.32, 4.10, 7.50, 8.00, 8.50`),
- *        every `Δstep >= threshold` (`0.085` GPU / `0.11` software WebGL), and once on the exact
- *        settle frame whenever construction motion pauses.
+ *      - Suppresses redundant shadow passes when `step`, `sunLight` state, `cutaway`,
+ *        `zoneVisMask`, and `renderMode` are unchanged.
+ *      - Refreshes shadows at every calibrated construction milestone, visibility step
+ *        boundary (`4.20, 4.50, 7.50`), every `Δstep >= threshold`, and on settle frames.
  *
  *   3. **Static Scene-Graph Matrix Freezing (`matrixAutoUpdate = false` + `O(1)` Subtree Skip)**:
- *      - Freezes static leaf `Mesh`, `InstancedMesh`, `LineSegments`, and non-animated `Group`
- *        transforms across `parisWorld` (preserving `backfillGroups` `y`-rise at `step 1.15..1.32`)
- *        and `towerController` (preserving all 159 `piece.object3D` roots when active, articulated
- *        crane/elevator/summit sub-rigs, Edoux hydraulic rams/cables, and hoist rigging pool).
- *      - Dynamically freezes settled `piece.object3D` subtrees while their zone settled-batch
- *        is active (`step >= settleStep`) and unfreezes them before `setStep` whenever `step`
- *        drops below `settleStep`, cutting `matrixAutoUpdate` nodes at `step = 11.0` from ~1,200
- *        down to < 45!
+ *      - Freezes static leaf `Mesh`, `InstancedMesh`, `LineSegments`, and immutable world
+ *        subtrees across `tehran_milad_world` and settled Milad Tower piece subtrees.
  */
 
-const CALIBRATED_PNP_STEPS = Object.freeze([0.55, 1.50, 3.55, 3.60, 4.85, 5.66, 6.52, 11.0]);
-const PARIS_VISIBILITY_STEP_BOUNDARIES = Object.freeze([1.15, 1.28, 1.32, 4.10, 7.50, 8.00, 8.50]);
+const CALIBRATED_PNP_STEPS = Object.freeze([0.50, 1.40, 3.15, 4.75, 6.15, 7.05, 8.85, 9.85, 10.60, 11.0]);
+const PARIS_VISIBILITY_STEP_BOUNDARIES = Object.freeze([4.20, 4.50, 7.50]);
 
 const DYNAMIC_TOWER_NODE_NAMES = new Set([
-  'z4_fresnel_optic',
-  'z4_robinson_anemometer',
-  'z4_flag_tricolore_1889',
-  'edoux_kinematic_wrapper',
-  'edoux_cabine_superieure_Ca2',
-  'edoux_cabine_inferieure_Ca1',
-  'edoux_top_sheave_cables',
-  'upper_shaft_climbing_rig',
-  'upper_crane_boom_N',
-  'upper_crane_boom_S',
-  'upper_crane_hoist_N',
-  'upper_crane_hoist_S',
-  's2_active_hoist_rigging_pool',
+  'milad_revolving_restaurant_ring',
+  'z3_head_revolving_restaurant',
+  'z5_panoramic_elevators',
+  'z5_temp_excavation_cranes',
+  'z5_temp_slipform_collar',
+  'z5_temp_head_cranes',
 ]);
 
 function isDynamicArticulatedTowerNode(obj) {
   if (!obj) return false;
   const name = obj.name || '';
   if (DYNAMIC_TOWER_NODE_NAMES.has(name)) return true;
-  if (
-    name.startsWith('cabin_carriage_pile_') ||
-    name.startsWith('bogie_pile_') ||
-    name.startsWith('cabin_body_pile_') ||
-    name.startsWith('otis_cwt_pile_') ||
-    name.startsWith('otis_chariot_pile_') ||
-    name.startsWith('creeper_crane_carriage_pile_') ||
-    name.startsWith('creeper_base_pile_') ||
-    name.startsWith('creeper_slew_pile_') ||
-    name.startsWith('creeper_slew_mesh_pile_')
-  ) {
+  if (name.startsWith('milad_elevator_cabin_')) {
     return true;
   }
   return false;
@@ -93,14 +65,13 @@ function crossedStepBoundary(prevStep, nextStep) {
 }
 
 /**
- * Disables `castShadow` on Tower meshes strictly below `maxWorldY` (`-6.6 m`, beneath the
- * `y = -6.5 m` caisson excavation pit floor). Call BEFORE `optimizeTowerMeshesAndZones`
- * so deep subterranean caisson chambers are batched separately from above-ground shadow casters.
+ * Disables `castShadow` on Tower meshes strictly below `maxWorldY` (`-14.2 m`, beneath the
+ * `y = -14.0 m` Milad excavation pit floor).
  */
 export function cullDeepSubterraneanShadowCasters({
   THREE,
   towerController,
-  maxWorldY = -6.6,
+  maxWorldY = -14.2,
 } = {}) {
   if (!THREE || !towerController?.rootGroup) return { culledCount: 0 };
 
@@ -129,7 +100,7 @@ export function cullDeepSubterraneanShadowCasters({
 }
 
 /**
- * Freezes `matrixAutoUpdate` on static Paris 1889 and Eiffel Tower nodes and installs `O(1)`
+ * Freezes `matrixAutoUpdate` on static Tehran world and Milad Tower nodes and installs `O(1)`
  * subtree skipping on immutable world groups, settled zone batches, and settled pieces.
  */
 export function freezeStaticSceneMatrices({ THREE, towerController, parisWorld } = {}) {
@@ -145,30 +116,15 @@ export function freezeStaticSceneMatrices({ THREE, towerController, parisWorld }
   let parisNodesFrozen = 0;
   let towerNodesFrozen = 0;
 
-  // 1. Freeze `parisWorld.group` static hierarchy (keeping `parvis_seine_iena` backfillGroups live)
+  // 1. Freeze `parisWorld.group` static hierarchy
   if (parisWorld?.group && !parisWorld.__s4MatricesFrozen) {
     const pRoot = parisWorld.group;
     pRoot.updateMatrixWorld(true);
     pRoot.matrixAutoUpdate = false;
     parisNodesFrozen += 1;
 
-    const parvisGroup = pRoot.getObjectByName('parvis_seine_iena');
-    const backfillDynamicGroups = new Set();
-    if (parvisGroup) {
-      // Backfill groups are unnamed direct Group children of `parvis_seine_iena`
-      // (`pitGroups` are also direct Group children; keeping direct Group children of
-      // `parvis_seine_iena` auto-updating costs only ~10 groups while guaranteeing backfill y-rise!)
-      for (const ch of parvisGroup.children) {
-        if (ch.isGroup) backfillDynamicGroups.add(ch);
-      }
-    }
-
     pRoot.traverse((obj) => {
       if (obj === pRoot) return;
-      if (backfillDynamicGroups.has(obj)) {
-        obj.matrixAutoUpdate = true;
-        return;
-      }
       if (obj.matrixAutoUpdate) {
         obj.matrixAutoUpdate = false;
         parisNodesFrozen += 1;
@@ -177,7 +133,6 @@ export function freezeStaticSceneMatrices({ THREE, towerController, parisWorld }
 
     // Install O(1) static-subtree skip on top-level immutable children of `parisWorld.group`
     for (const topChild of pRoot.children) {
-      if (topChild === parvisGroup) continue;
       topChild.updateMatrixWorld = fastStaticSubtreeUpdateMatrixWorld;
     }
 
@@ -207,23 +162,10 @@ export function freezeStaticSceneMatrices({ THREE, towerController, parisWorld }
       }
     }
 
-    const hoistPool = tRoot.getObjectByName('s2_active_hoist_rigging_pool');
-    const isInsideHoistPool = (obj) => {
-      if (!hoistPool) return false;
-      let cur = obj;
-      while (cur) {
-        if (cur === hoistPool) return true;
-        cur = cur.parent;
-      }
-      return false;
-    };
-
     tRoot.traverse((obj) => {
       if (obj === tRoot || zoneGroups.has(obj)) return;
       if (pieceRoots.has(obj)) return;
       if (isDynamicArticulatedTowerNode(obj)) return;
-      if (obj.parent?.name === 'edoux_kinematic_wrapper' && obj.isMesh) return;
-      if (isInsideHoistPool(obj)) return;
 
       if (obj.matrixAutoUpdate) {
         obj.matrixAutoUpdate = false;

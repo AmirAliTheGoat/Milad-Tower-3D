@@ -895,39 +895,6 @@ vec3 pbrWorldDeltaN = vec3( 0.0 );
     float pbrDistFade = 1.0 / ( 1.0 + 0.00018 * dot( vViewPosition, vViewPosition ) );
     pbrWorldDeltaN = ( pbrDX * pbrBW.x + pbrDY * pbrBW.y + pbrDZ * pbrBW.z ) * uPbrNormalStr * pbrDistFade;
   #endif
-
-  if ( uPbrSpecialMode > 0.5 && uPbrSpecialMode < 1.5 ) {
-    // Esplanade Gravel: Dressed Château-Landon stone apron & curb joints around the 4 pier plinths [±51.9535, ±51.9535]
-    vec2 pbrPierLocal = vPbrWorldPos.xz - sign( vPbrWorldPos.xz + vec2( 1e-4 ) ) * vec2( 51.9535 );
-    vec2 pbrPierAbs = abs( pbrPierLocal );
-    float pbrPierBox = max( pbrPierAbs.x, pbrPierAbs.y );
-    float pbrApronMask = ( 1.0 - smoothstep( 14.85, 15.35, pbrPierBox ) ) * smoothstep( 10.8, 11.4, pbrPierBox );
-    if ( pbrApronMask > 0.005 && abs( vPbrWorldNormal.y ) > 0.65 ) {
-      vec2 pbrSlabGrid = abs( fract( pbrPierLocal / 0.96 + 0.5 ) - 0.5 );
-      float pbrJointDist = min( pbrSlabGrid.x, pbrSlabGrid.y );
-      float pbrBorderJoint = abs( pbrPierBox - 15.05 );
-      float pbrGroove = 1.0 - smoothstep( 0.012, 0.038, min( pbrJointDist, pbrBorderJoint * 0.5 ) );
-      vec3 pbrStoneTint = vec3( 0.965, 0.945, 0.905 ) * ( 1.0 - 0.24 * pbrGroove );
-      pbrAlbedoMod = mix( pbrAlbedoMod, pbrStoneTint, pbrApronMask * 0.85 );
-      pbrRoughSample = mix( pbrRoughSample, 0.78 + 0.18 * pbrGroove, pbrApronMask * 0.85 );
-      pbrAoSample *= mix( 1.0, 1.0 - 0.36 * pbrGroove, pbrApronMask );
-      vec2 pbrGradJ = sign( fract( pbrPierLocal / 0.96 + 0.5 ) - 0.5 ) * pbrGroove * 0.45 * pbrApronMask;
-      pbrWorldDeltaN += vec3( pbrGradJ.x, 0.0, pbrGradJ.y );
-    }
-    float pbrPierContactAo = mix( 0.58, 1.0, smoothstep( 11.6, 15.6, pbrPierBox ) );
-    float pbrUnderTowerAo = mix( 0.91, 1.0, smoothstep( 24.0, 74.0, length( vPbrWorldPos.xz ) ) );
-    pbrAoSample *= pbrPierContactAo * pbrUnderTowerAo;
-    float pbrAxialPath = ( 1.0 - smoothstep( 11.0, 18.0, abs( vPbrWorldPos.x ) ) );
-    pbrRoughSample = clamp( pbrRoughSample - 0.04 * pbrAxialPath, 0.08, 1.0 );
-  } else if ( uPbrSpecialMode > 1.5 ) {
-    // Riverbank / Quay / Bridge Pier Stone: Capillary waterline dampness near Seine Y = -4.20 m
-    float pbrWaterDamp = smoothstep( -1.55, -4.25, vPbrWorldPos.y );
-    if ( pbrWaterDamp > 0.005 ) {
-      pbrAlbedoMod *= mix( vec3( 1.0 ), vec3( 0.68, 0.69, 0.66 ), pbrWaterDamp );
-      pbrRoughSample = mix( pbrRoughSample, 0.24, pbrWaterDamp * 0.88 );
-      pbrAoSample *= mix( 1.0, 0.82, pbrWaterDamp );
-    }
-  }
 }
 diffuseColor.rgb *= pbrAlbedoMod * mix( 1.0, pbrAoSample, 0.42 );`
       )
@@ -975,14 +942,13 @@ diffuseColor.rgb *= pbrAlbedoMod * mix( 1.0, pbrAoSample, 0.42 );`
 }
 
 // ---------------------------------------------------------------------------
-// In-Place Upgrader for `paris_1889` World Floor, Ground, Quay & Context Meshes
+// In-Place Upgrader for `tehran_milad_world` Terrain, Plaza & Context Meshes
 // ---------------------------------------------------------------------------
 
 /**
- * Traverses a `paris_1889` world group (or full `scene`) and upgrades all world floor,
- * esplanade, allée, parterre, stone plinth/curb/quay/riverbank, street, excavation earth,
- * marble, timber, roof, and water materials in-place with rich world-space PBR textures,
- * while preserving any existing `onBeforeCompile` radial mist hooks!
+ * Traverses a `tehran_milad_world` world group (or full `scene`) and upgrades all terrain,
+ * Gisha Hilltop plaza, expressway, stone curb, street, earth, timber, roof, and basin water
+ * materials in-place with rich world-space PBR textures while preserving radial mist hooks.
  */
 export function upgradeWorldFloorAndSurfaceMaterials(worldRootOrObject, THREE, {
   maxAnisotropy = 8,
@@ -1030,7 +996,7 @@ export function upgradeWorldFloorAndSurfaceMaterials(worldRootOrObject, THREE, {
           normalStrength: 1.18,
           roughnessStrength: 0.95,
           aoStrength: 0.78,
-          specialMode: 1,
+          specialMode: 0,
           enableRadialMist: true,
         });
         upgradedMaterials += 1;
@@ -1076,7 +1042,7 @@ export function upgradeWorldFloorAndSurfaceMaterials(worldRootOrObject, THREE, {
           normalStrength: 1.14,
           roughnessStrength: 0.94,
           aoStrength: 0.82,
-          specialMode: 2, // Waterline dampness on quays & bridge piers near Y = -4.20 m!
+          specialMode: 0,
           enableRadialMist: true,
         });
         upgradedMaterials += 1;
@@ -1139,18 +1105,17 @@ export function upgradeWorldFloorAndSurfaceMaterials(worldRootOrObject, THREE, {
           enableRadialMist: true,
         });
         upgradedMaterials += 1;
-      } else if (mName.includes('seine') || mName.includes('water')) {
-        const isSeine = mName.includes('seine');
-        if (!keepColor) mat.color.setHex(isSeine ? 0xb7b4ae : 0xaba8a1);
-        mat.roughness = isSeine ? 0.16 : 0.18;
+      } else if (mName.includes('water')) {
+        if (!keepColor) mat.color.setHex(0xaba8a1);
+        mat.roughness = 0.18;
         mat.metalness = 0.08;
         mat.envMapIntensity = 1.25;
         attachWorldSurfacePbr(THREE, mat, {
           pbrTrio: bank.waterRipple,
-          tileMeters: isSeine ? [9.5, 6.2] : [3.2, 3.2],
+          tileMeters: [3.2, 3.2],
           secondaryScaleRatio: 0.37,
           albedoStrength: 0.14,
-          normalStrength: isSeine ? 0.56 : 0.46,
+          normalStrength: 0.46,
           roughnessStrength: 0.65,
           aoStrength: 0.15,
           enableRadialMist: true,

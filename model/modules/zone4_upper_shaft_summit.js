@@ -26,7 +26,164 @@ export async function buildZone({ THREE, materials }) {
   const dummy = new THREE.Object3D();
 
   // ---------------------------------------------------------------------------
-  // 1. 302–315 m Faceted Glass-and-Steel Sky Dome
+  // 1. 302.5–315 m Rooftop Recessed Octagonal Well & Bolted Steel Antenna Base Collar (2006)
+  // ---------------------------------------------------------------------------
+  const collarGroup = new THREE.Group();
+  collarGroup.name = 'z4_antenna_base_collar';
+
+  const concrete = materials.miladConcrete || cladding;
+  const concreteDark = materials.miladConcreteRib || mullion;
+  const craneMat = materials.miladCraneSteel || steel;
+
+  // Lower concrete head roof deck (`y = 302.5 .. 311.6 m`)
+  const roofTerraceDeck = new THREE.Mesh(
+    new THREE.CylinderGeometry(18.6, 19.0, 2.4, 16),
+    cladding
+  );
+  roofTerraceDeck.position.y = 303.7;
+  collarGroup.add(roofTerraceDeck);
+
+  const upperDeckBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(16.4, 18.0, 6.8, 16),
+    concrete
+  );
+  upperDeckBase.position.y = 308.3;
+  collarGroup.add(upperDeckBase);
+
+  // True hollow annular 315 m working roof deck surrounding the RECESSED OCTAGONAL PIT (`r = 7.4 .. 16.4 m`, `y = 311.7 .. 314.9 m`)
+  const annularDeckProfile = [
+    new THREE.Vector2(7.35, 311.7),
+    new THREE.Vector2(7.35, 314.95),
+    new THREE.Vector2(16.25, 314.95),
+    new THREE.Vector2(16.45, 311.7),
+    new THREE.Vector2(7.35, 311.7),
+  ];
+  const annularDeck = new THREE.Mesh(new THREE.LatheGeometry(annularDeckProfile, 16), concrete);
+  collarGroup.add(annularDeck);
+
+  // Crisp recessed octagonal formwork liner wall inside the well (`r = 7.15 m`, `y = 311.7 .. 315.1 m`)
+  const wellProfile = [
+    new THREE.Vector2(6.95, 311.7),
+    new THREE.Vector2(6.95, 315.12),
+    new THREE.Vector2(7.42, 315.12),
+    new THREE.Vector2(7.42, 311.7),
+    new THREE.Vector2(6.95, 311.7),
+  ];
+  const octagonalWell = new THREE.Mesh(new THREE.LatheGeometry(wellProfile, 8), craneMat);
+  octagonalWell.rotation.y = Math.PI / 8;
+  collarGroup.add(octagonalWell);
+
+  // Dark pit floor inside the recessed octagonal well (`y = 311.8 m`)
+  const wellFloor = new THREE.Mesh(new THREE.CylinderGeometry(7.0, 7.0, 0.35, 8), concreteDark);
+  wellFloor.rotation.y = Math.PI / 8;
+  wellFloor.position.y = 311.85;
+  collarGroup.add(wellFloor);
+
+  // Thick hollow double-sided cylindrical bolted steel antenna base sleeve (`y = 311.8 .. 324.4 m`, `r = 4.25 .. 4.65 m`)
+  // Built via LatheGeometry so BOTH the outer bolted shell AND the hollow dark interior cavity render cleanly!
+  const sleeveProfile = [
+    new THREE.Vector2(4.28, 311.9),
+    new THREE.Vector2(4.28, 324.4),
+    new THREE.Vector2(4.65, 324.4),
+    new THREE.Vector2(4.65, 311.9),
+    new THREE.Vector2(4.28, 311.9),
+  ];
+  const sleeveWall = new THREE.Mesh(new THREE.LatheGeometry(sleeveProfile, 24), steel);
+  collarGroup.add(sleeveWall);
+
+  // Inner recessed structural stiffening ring collar near top of open hollow sleeve
+  const innerRingProfile = [
+    new THREE.Vector2(3.62, 322.2),
+    new THREE.Vector2(3.62, 322.85),
+    new THREE.Vector2(4.32, 322.85),
+    new THREE.Vector2(4.32, 322.2),
+    new THREE.Vector2(3.62, 322.2),
+  ];
+  const innerRing = new THREE.Mesh(new THREE.LatheGeometry(innerRingProfile, 24), mullion);
+  collarGroup.add(innerRing);
+
+  // 16 Vertical bolted splice flange strips around exterior + 12 interior vertical stiffener ribs
+  const spliceGeo = new THREE.BoxGeometry(0.32, 12.4, 0.24);
+  const spliceInst = new THREE.InstancedMesh(spliceGeo, mullion, 28);
+  let spIdx = 0;
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2;
+    dummy.position.set(Math.cos(a) * 4.72, 318.15, Math.sin(a) * 4.72);
+    dummy.rotation.set(0, -a, 0);
+    dummy.scale.set(1, 1, 1);
+    dummy.updateMatrix();
+    spliceInst.setMatrixAt(spIdx++, dummy.matrix);
+  }
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    dummy.position.set(Math.cos(a) * 4.10, 317.8, Math.sin(a) * 4.10);
+    dummy.rotation.set(0, -a, 0);
+    dummy.scale.set(0.85, 0.92, 1.4);
+    dummy.updateMatrix();
+    spliceInst.setMatrixAt(spIdx++, dummy.matrix);
+  }
+  spliceInst.instanceMatrix.needsUpdate = true;
+  spliceInst.computeBoundingSphere();
+  collarGroup.add(spliceInst);
+
+  // Horizontal bolted flange seams around the steel sleeve
+  for (const hy of [315.2, 319.8, 323.9]) {
+    const boltRing = new THREE.Mesh(new THREE.TorusGeometry(4.68, 0.12, 6, 32), mullion);
+    boltRing.rotation.x = Math.PI / 2;
+    boltRing.position.y = hy;
+    collarGroup.add(boltRing);
+  }
+
+  // Exterior steel access ladder leaning against front-right side of sleeve (matching Stop 7 photo)
+  const ladderGroup = new THREE.Group();
+  ladderGroup.rotation.y = 0.92;
+  for (const lx of [-0.36, 0.36]) {
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.10, 12.6, 0.14), mullion);
+    rail.position.set(lx, 318.2, 5.05);
+    rail.rotation.x = -0.07;
+    ladderGroup.add(rail);
+  }
+  const rungGeo = new THREE.BoxGeometry(0.76, 0.08, 0.08);
+  const rungInst = new THREE.InstancedMesh(rungGeo, mullion, 22);
+  for (let r = 0; r < 22; r++) {
+    const frac = r / 21;
+    dummy.position.set(0, 312.4 + frac * 11.6, 5.45 - frac * 0.80);
+    dummy.rotation.set(0, 0, 0);
+    dummy.scale.set(1, 1, 1);
+    dummy.updateMatrix();
+    rungInst.setMatrixAt(r, dummy.matrix);
+  }
+  rungInst.instanceMatrix.needsUpdate = true;
+  rungInst.computeBoundingSphere();
+  ladderGroup.add(rungInst);
+  collarGroup.add(ladderGroup);
+
+  // Small rooftop stacked formwork planks & work boxes around deck edge (Stop 7 site detail)
+  for (const [px, pz, ry, sx, sy, sz] of [
+    [1.8, 9.6, 0.32, 3.2, 0.55, 1.8],
+    [-4.8, 8.2, -0.48, 4.4, 0.48, 1.4],
+    [8.2, 4.2, 0.85, 2.8, 1.2, 1.6],
+  ]) {
+    const stack = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), concreteDark);
+    stack.position.set(px, 315.0 + sy * 0.5, pz);
+    stack.rotation.y = ry;
+    collarGroup.add(stack);
+  }
+
+  group.add(collarGroup);
+  pieces.push({
+    id: 'z4_antenna_base_collar',
+    label: '315 m Rooftop Recessed Well & Bolted Steel Antenna Base Collar',
+    object3D: collarGroup,
+    phase: 7,
+    span: [7.00, 7.45],
+    category: 'permanent',
+    yMin: 302.5,
+    yMax: 325.8,
+  });
+
+  // ---------------------------------------------------------------------------
+  // 2. 302–315 m Faceted Glass-and-Steel Sky Dome (closes cleanly around completed antenna root)
   // ---------------------------------------------------------------------------
   const skyDomeGroup = new THREE.Group();
   skyDomeGroup.name = 'z4_sky_dome_structure';
@@ -93,34 +250,34 @@ export async function buildZone({ THREE, materials }) {
     label: '302–315 m Faceted Glass-and-Steel Sky Dome',
     object3D: skyDomeGroup,
     phase: 9,
-    span: [9.85, 10.55],
+    span: [9.60, 10.45],
     category: 'permanent',
     yMin: 302.5,
     yMax: 315.4,
   });
 
   // ---------------------------------------------------------------------------
-  // 2. 120-Meter Four-Stage Steel Antenna Mast (315 m .. 435 m, erected 2006–2007)
+  // 3. 120-Meter Four-Stage Steel Antenna Mast (325 m .. 435 m, erected 2006–2007)
   // ---------------------------------------------------------------------------
 
-  // Stage 1: Heavy Steel Mast Base & Telecom Maintenance Platforms (315 m .. 350 m)
+  // Stage 1: Heavy Steel Mast Base & Telecom Maintenance Platforms (324 m .. 352 m)
   const ant1 = new THREE.Group();
   ant1.name = 'z4_antenna_stage_1';
 
-  const core1 = new THREE.Mesh(new THREE.CylinderGeometry(2.65, 3.85, 35.0, 12), steel);
-  core1.position.y = 332.5;
+  const core1 = new THREE.Mesh(new THREE.CylinderGeometry(2.65, 3.85, 29.0, 12), steel);
+  core1.position.y = 338.5;
   ant1.add(core1);
 
-  // Exterior stiffening ribs + microwave platform rings at 326 m and 348 m
+  // Exterior stiffening ribs + microwave platform rings at 328 m and 348 m
   for (let i = 0; i < 8; i++) {
     const a = (i / 8) * Math.PI * 2;
-    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.28, 34.0, 0.55), mullion);
-    fin.position.set(Math.cos(a) * 3.3, 332.5, Math.sin(a) * 3.3);
+    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.28, 28.0, 0.55), mullion);
+    fin.position.set(Math.cos(a) * 3.3, 338.5, Math.sin(a) * 3.3);
     fin.rotation.y = -a;
     ant1.add(fin);
   }
   for (const [py, pr] of [
-    [326.0, 4.9],
+    [328.0, 4.9],
     [348.5, 4.2],
   ]) {
     const plat = new THREE.Mesh(new THREE.CylinderGeometry(pr, pr * 0.94, 0.85, 16), cladding);
@@ -132,13 +289,13 @@ export async function buildZone({ THREE, materials }) {
     ant1.add(guard);
   }
 
-  // Parabolic microwave dishes around 326 m platform
+  // Parabolic microwave dishes around 328 m platform
   const dishGeo = new THREE.CylinderGeometry(1.1, 0.25, 0.45, 12);
   dishGeo.rotateX(Math.PI / 2);
   const dishInst = new THREE.InstancedMesh(dishGeo, cladding, 8);
   for (let i = 0; i < 8; i++) {
     const a = (i / 8) * Math.PI * 2;
-    dummy.position.set(Math.cos(a) * 4.5, 327.2, Math.sin(a) * 4.5);
+    dummy.position.set(Math.cos(a) * 4.5, 329.2, Math.sin(a) * 4.5);
     dummy.rotation.set(0, -a + Math.PI / 2, 0);
     dummy.scale.set(1, 1, 1);
     dummy.updateMatrix();
@@ -151,21 +308,21 @@ export async function buildZone({ THREE, materials }) {
   group.add(ant1);
   pieces.push({
     id: 'z4_antenna_stage_1',
-    label: 'Antenna Mast Stage 1 — Heavy Base & Microwave Ring (315–350 m)',
+    label: 'Antenna Mast Stage 1 — Heavy Base & Microwave Ring (324–352 m)',
     object3D: ant1,
-    phase: 7,
-    span: [7.15, 7.62],
+    phase: 8,
+    span: [7.62, 8.20],
     category: 'permanent',
-    yMin: 315.0,
-    yMax: 350.0,
+    yMin: 324.0,
+    yMax: 352.0,
   });
 
-  // Stage 2: Second Tapered Broadcast Section (350 m .. 382 m)
+  // Stage 2: Second Tapered Broadcast Section (352 m .. 382 m)
   const ant2 = new THREE.Group();
   ant2.name = 'z4_antenna_stage_2';
 
-  const core2 = new THREE.Mesh(new THREE.CylinderGeometry(1.75, 2.55, 32.0, 12), steel);
-  core2.position.y = 366.0;
+  const core2 = new THREE.Mesh(new THREE.CylinderGeometry(1.75, 2.55, 31.0, 12), steel);
+  core2.position.y = 366.5;
   ant2.add(core2);
 
   // Stepped collar & broadcast dipole panels
@@ -193,12 +350,12 @@ export async function buildZone({ THREE, materials }) {
   group.add(ant2);
   pieces.push({
     id: 'z4_antenna_stage_2',
-    label: 'Antenna Mast Stage 2 — Broadcast Dipole Array (350–382 m)',
+    label: 'Antenna Mast Stage 2 — Broadcast Dipole Array (352–382 m)',
     object3D: ant2,
-    phase: 7,
-    span: [7.58, 8.02],
+    phase: 8,
+    span: [8.14, 8.66],
     category: 'permanent',
-    yMin: 350.0,
+    yMin: 352.0,
     yMax: 382.0,
   });
 
@@ -225,8 +382,8 @@ export async function buildZone({ THREE, materials }) {
     id: 'z4_antenna_stage_3',
     label: 'Antenna Mast Stage 3 — UHF/FM Transmission Collar (382–412 m)',
     object3D: ant3,
-    phase: 7,
-    span: [7.98, 8.42],
+    phase: 8,
+    span: [8.60, 9.10],
     category: 'permanent',
     yMin: 382.0,
     yMax: 412.0,
@@ -253,8 +410,8 @@ export async function buildZone({ THREE, materials }) {
     id: 'z4_antenna_stage_4_tip',
     label: 'Antenna Mast Stage 4 — 435 m Spire & Lightning Arrestor',
     object3D: ant4,
-    phase: 7,
-    span: [8.38, 8.80],
+    phase: 8,
+    span: [9.04, 9.55],
     category: 'permanent',
     yMin: 412.0,
     yMax: 435.0,

@@ -45,7 +45,7 @@ export class MuseumHeader {
   constructor({
     container = null,
     parent = null,
-    lang = 'en',
+    lang = 'fa',
     mood = 'day',
     enablePureViewButton = true,
     onLanguageChange = null,

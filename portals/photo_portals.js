@@ -22,7 +22,7 @@ import {
   normalizeLanguage,
   getPhotoCuration,
   PHOTO_CURATION_1889,
-  CHAMP_DE_MARS_TIMELAPSE_IDS,
+  MILAD_TIMELAPSE_IDS,
   PHOTO_CHRONOLOGICAL_IDS,
 } from 'museum/story/chapters_1889.js';
 
@@ -136,7 +136,7 @@ export class PhotoPortalSystem {
     this.onThumbnailReady = typeof onThumbnailReady === 'function' ? onThumbnailReady : null;
 
     this.portalsGroup = new THREE.Group();
-    this.portalsGroup.name = 'photo_portals_1889';
+    this.portalsGroup.name = 'photo_portals_milad';
     this.portalsGroup.visible = false; // Hidden in visitor mode; toggleable from Debug View
     this.scene.add(this.portalsGroup);
 
@@ -277,7 +277,7 @@ export class PhotoPortalSystem {
       if (!orderedIds.includes(id)) orderedIds.push(id);
     }
 
-    const timelapseSet = new Set(CHAMP_DE_MARS_TIMELAPSE_IDS);
+    const timelapseSet = new Set(MILAD_TIMELAPSE_IDS);
     this._portals = orderedIds.map((photoId, idx) => {
       const camEntry = rawById.get(photoId);
       const curation =
@@ -511,7 +511,7 @@ export class PhotoPortalSystem {
   }
 
   startTimelapse({ loop = true } = {}) {
-    const validIds = CHAMP_DE_MARS_TIMELAPSE_IDS.filter((id) => this._portalById.has(id));
+    const validIds = MILAD_TIMELAPSE_IDS.filter((id) => this._portalById.has(id));
     if (validIds.length < 2) return;
 
     let startIdx = validIds.indexOf(this._activePortalId);
@@ -1199,7 +1199,7 @@ export class PhotoPortalSystem {
         id: photoId,
         photoId,
         step: recommendedStep,
-        era: '1887–89',
+        era: '1994–2008',
         numLandmarks: landmarks.length,
         rmsePx: Math.sqrt(sumSqObs / n),
         rmseVsObservedPx: Math.sqrt(sumSqObs / n),

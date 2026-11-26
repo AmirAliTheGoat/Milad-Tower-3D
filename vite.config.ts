@@ -56,7 +56,7 @@ function stripRawModulePreloadsForBuild(html: string): string {
 
 function staticAssetsAndImportmapPlugin(): Plugin {
   return {
-    name: 'eiffel-static-assets-and-importmap',
+    name: 'milad-static-assets-and-importmap',
     transformIndexHtml: {
       order: 'pre',
       handler(html: string, ctx) {
@@ -68,7 +68,7 @@ function staticAssetsAndImportmapPlugin(): Plugin {
     },
     closeBundle() {
       const outDir = resolve(rootDir, 'dist');
-      const staticDirs = ['data', 'references', 'thumbnails', 'src/assets/images'];
+      const staticDirs = ['data', 'src/assets/images'];
       for (const dirName of staticDirs) {
         const src = join(rootDir, dirName);
         if (existsSync(src) && statSync(src).isDirectory()) {
@@ -116,6 +116,7 @@ export default defineConfig({
   server: {
     port: 3000,
     host: '0.0.0.0',
+    allowedHosts: true,
   },
   build: {
     assetsInlineLimit: 0,

@@ -71,24 +71,24 @@ export async function buildZone({ THREE, materials }) {
   });
 
   // ---------------------------------------------------------------------------
-  // 2. 12-Story Lower Basket Diagrid Steel Truss Frame (255 m .. 278 m, r -> 30 m)
+  // 2. 12-Story Exposed Outer Steel X-Diagrid Basket Truss Frame (255 m .. 278 m, r -> 30.4 m)
   // ---------------------------------------------------------------------------
   const basketSteelGroup = new THREE.Group();
   basketSteelGroup.name = 'z3_head_lower_basket_steel';
 
   const N_SIDES = 16;
   const LEVELS = [
-    { y: 255.5, r: 16.2 },
-    { y: 263.0, r: 21.4 },
-    { y: 270.5, r: 26.2 },
-    { y: 276.0, r: 29.6 },
+    { y: 255.5, r: 16.4 },
+    { y: 263.0, r: 21.8 },
+    { y: 270.5, r: 26.8 },
+    { y: 276.0, r: 30.2 },
   ];
 
   for (let li = 0; li < LEVELS.length; li++) {
     const { y, r } = LEVELS[li];
-    // Horizontal ring girder & floor deck plate
+    // Inset structural floor plates (`r - 2.2 m`) so the exterior steel X-diagrid trusses stand proudly proud outside
     const ringDeck = new THREE.Mesh(
-      new THREE.CylinderGeometry(r - 0.5, r - 0.5, 0.85, N_SIDES),
+      new THREE.CylinderGeometry(r - 2.2, r - 2.2, 0.8, N_SIDES),
       concreteRib
     );
     ringDeck.position.y = y;
@@ -99,7 +99,7 @@ export async function buildZone({ THREE, materials }) {
       const a1 = ((i + 1) / N_SIDES) * Math.PI * 2;
       const p0 = new THREE.Vector3(Math.cos(a0) * r, y, Math.sin(a0) * r);
       const p1 = new THREE.Vector3(Math.cos(a1) * r, y, Math.sin(a1) * r);
-      addStrut(basketSteelGroup, p0, p1, 0.38, steel);
+      addStrut(basketSteelGroup, p0, p1, 0.44, steel);
 
       if (li < LEVELS.length - 1) {
         const next = LEVELS[li + 1];
@@ -108,11 +108,11 @@ export async function buildZone({ THREE, materials }) {
         const pNext1 = new THREE.Vector3(Math.cos(a1) * next.r, next.y, Math.sin(a1) * next.r);
         const pNextMid = new THREE.Vector3(Math.cos(aMid) * next.r, next.y, Math.sin(aMid) * next.r);
 
-        // Signature Iranian diamond / muqarnas diagrid basket struts
-        addStrut(basketSteelGroup, p0, pNext0, 0.42, steel);
-        addStrut(basketSteelGroup, p0, pNextMid, 0.32, steel);
-        addStrut(basketSteelGroup, p1, pNextMid, 0.32, steel);
-        addStrut(basketSteelGroup, p0, pNext1, 0.22, mullion);
+        // Bold exposed exterior X-diagrid & diamond trusses (matching real Milad silhouette)
+        addStrut(basketSteelGroup, p0, pNext0, 0.46, steel);
+        addStrut(basketSteelGroup, p0, pNextMid, 0.38, steel);
+        addStrut(basketSteelGroup, p1, pNextMid, 0.38, steel);
+        addStrut(basketSteelGroup, p0, pNext1, 0.30, steel);
       }
     }
   }
@@ -120,59 +120,51 @@ export async function buildZone({ THREE, materials }) {
   group.add(basketSteelGroup);
   pieces.push({
     id: 'z3_head_lower_basket_steel',
-    label: 'Heavy-Lift Diagrid Steel Basket Structure (255–276 m)',
+    label: 'Heavy-Lift Exposed Steel X-Diagrid Basket (255–276 m)',
     object3D: basketSteelGroup,
     phase: 6,
-    span: [5.38, 6.12],
+    span: [5.32, 6.14],
     category: 'permanent',
     yMin: 255.0,
     yMax: 276.5,
   });
 
   // ---------------------------------------------------------------------------
-  // 3. Faceted Iranian Basket Cladding & Technical Floors (255 m .. 274 m)
+  // 3. Recessed Faceted Inner Head Cladding & Curtain Glazing (255 m .. 274 m)
   // ---------------------------------------------------------------------------
   const claddingGroup = new THREE.Group();
   claddingGroup.name = 'z3_head_basket_cladding';
 
-  // Inner faceted metallic cladding shell wrapping the technical & fire-proof floors
+  // Recessed inner faceted dark cladding shell (`r = 14.0 -> 26.8`) inside the outer X-diagrid
   const lowerClad1 = new THREE.Mesh(
-    new THREE.CylinderGeometry(21.1, 15.9, 7.6, 16),
-    cladding
+    new THREE.CylinderGeometry(18.8, 14.0, 7.6, 16),
+    mullion
   );
   lowerClad1.position.y = 259.2;
   claddingGroup.add(lowerClad1);
 
   const lowerClad2 = new THREE.Mesh(
-    new THREE.CylinderGeometry(25.8, 21.1, 7.4, 16),
+    new THREE.CylinderGeometry(23.6, 18.8, 7.4, 16),
     cladding
   );
   lowerClad2.position.y = 266.7;
   claddingGroup.add(lowerClad2);
 
-  // Narrow turquoise ribbon glazing band at 271 m (Art Gallery / VIP Level)
+  // Recessed turquoise ribbon glazing band at 271 m (Art Gallery / VIP Level)
   const vipGlass = new THREE.Mesh(
-    new THREE.CylinderGeometry(28.5, 26.2, 3.8, 16, 1, true),
+    new THREE.CylinderGeometry(26.6, 24.0, 3.8, 16, 1, true),
     glass
   );
   vipGlass.position.y = 272.2;
   claddingGroup.add(vipGlass);
 
-  // Architectural faceted crown ribs highlighting the 16-sided geometry
-  for (let i = 0; i < 16; i++) {
-    const a = (i / 16) * Math.PI * 2;
-    const pA = new THREE.Vector3(Math.cos(a) * 16.3, 255.5, Math.sin(a) * 16.3);
-    const pB = new THREE.Vector3(Math.cos(a) * 29.8, 275.8, Math.sin(a) * 29.8);
-    addStrut(claddingGroup, pA, pB, 0.34, mullion);
-  }
-
   group.add(claddingGroup);
   pieces.push({
     id: 'z3_head_basket_cladding',
-    label: 'Iranian Geometric Basket Cladding & 271 m Gallery Band',
+    label: 'Recessed Faceted Basket Core Cladding & 271 m Gallery Band',
     object3D: claddingGroup,
     phase: 7,
-    span: [6.22, 6.98],
+    span: [6.28, 6.88],
     category: 'permanent',
     yMin: 255.0,
     yMax: 276.0,
@@ -271,8 +263,8 @@ export async function buildZone({ THREE, materials }) {
     id: 'z3_head_revolving_restaurant',
     label: '276 m Revolving Restaurant & 280 m Open Observation Deck (60 m Span)',
     object3D: restaurantDeckGroup,
-    phase: 8,
-    span: [8.85, 9.55],
+    phase: 7,
+    span: [6.75, 7.30],
     category: 'permanent',
     yMin: 275.0,
     yMax: 282.6,
@@ -365,8 +357,8 @@ export async function buildZone({ THREE, materials }) {
     id: 'z3_head_upper_decks_292',
     label: '292 m Enclosed Observation Deck & Tapered Upper Crown',
     object3D: upperHeadGroup,
-    phase: 8,
-    span: [9.15, 9.82],
+    phase: 7,
+    span: [6.90, 7.36],
     category: 'permanent',
     yMin: 281.0,
     yMax: 302.6,

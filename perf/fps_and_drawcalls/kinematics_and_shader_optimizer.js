@@ -24,12 +24,8 @@
  *        materials share **1** WebGLProgram (`~73%` fewer WebGLPrograms, `100%` mathematical parity),
  *        with weight-gated triplanar taps skipping `<0.4%`-weight planes on flat faces.
  *      - Pre-warms any remaining unseen shader variants (instanced sketch/foliage, transparent glass,
- *        UV plaques, 1-clipping-plane Tower PBR) via a tiny `4×4` offscreen render target (`16` pixels,
+ *        UV surfaces, 1-clipping-plane Tower PBR) via a tiny `4×4` offscreen render target (`16` pixels,
  *        `1`-triangle proxy meshes inside `scene`) so **0** mid-flight shader compilations ever occur.
- *
- *   3. **Fast Analytical `z4_flag_tricolore_1889` Wave & Normals**:
- *      Replaces per-frame 207-vertex trig + 352-triangle `computeVertexNormals()` with exact
- *      23-column analytical wave + `(-dz/dx, 0, 1)` surface normals, skipping VBO uploads when idle.
  */
 
 function clamp(v, lo, hi) {
@@ -140,8 +136,7 @@ function fastCloneMaterialForClipping(baseMat, planes) {
 }
 
 /**
- * Optimizes `BuildKinematicsEngine` per-piece clipping material sharing, dynamic sub-rig bounds,
- * and `zone4` Tricolore flag wave + analytical surface normals.
+ * Optimizes `BuildKinematicsEngine` per-piece clipping material sharing and dynamic sub-rig bounds.
  */
 export function optimizeKinematicsEngine({ THREE, towerController } = {}) {
   if (!THREE || !towerController) return null;
@@ -218,130 +213,6 @@ export function optimizeKinematicsEngine({ THREE, towerController } = {}) {
     clippedMaterialSharingInstalled = true;
   }
 
-  // 2. Replace per-frame 207-vertex trig + `computeVertexNormals()` on `z4_flag_tricolore_1889`
-  //    with 23-column analytical wave + exact `normalize(-dz/dx, 0, 1)` surface normals.
-  const z4 = towerController.zones?.get?.('zone4');
-  const rootGroup = towerController.rootGroup;
-  if (z4 && rootGroup && !z4.__s4AnalyticalFlagInstalled) {
-    const flagMesh = rootGroup.getObjectByName('z4_flag_tricolore_1889');
-    const anemometerGroup = rootGroup.getObjectByName('z4_robinson_anemometer');
-    const opticGroup = rootGroup.getObjectByName('z4_fresnel_optic');
-    const flagGeom = flagMesh?.geometry;
-    const posAttr = flagGeom?.attributes?.position;
-    const normAttr = flagGeom?.attributes?.normal;
-
-    if (
-      flagMesh &&
-      anemometerGroup &&
-      opticGroup &&
-      posAttr &&
-      normAttr &&
-      posAttr.count === 207 // PlaneGeometry(5.50, 2.95, 22, 8) -> 23 * 9 = 207 vertices
-    ) {
-      const cols = 23;
-      const rows = 9;
-      const flagW = 5.50;
-      const invFlagW = 1.0 / flagW;
-
-      // Recover exact base (bx, by) coordinates from current geometry state
-      const curStep = towerController.getStep();
-      const curPhase = curStep >= 8.90 ? 0.65 + (curStep - 8.90) * 6.0 : 0.6;
-      const colX = new Float32Array(cols);
-      const colU = new Float32Array(cols);
-      const rowBaseY = new Float32Array(rows);
-
-      for (let ix = 0; ix < cols; ix++) {
-        const bx = posAttr.getX(ix);
-        const u = clamp((bx - 0.06) * invFlagW, 0, 1);
-        colX[ix] = bx;
-        colU[ix] = u;
-      }
-      for (let iy = 0; iy < rows; iy++) {
-        // Column 0 has u = 0 => yDroop(0) === 0, so posAttr.getY(iy * cols) is the exact un-drooped baseY!
-        rowBaseY[iy] = posAttr.getY(iy * cols);
-      }
-
-      const colDroop = new Float32Array(cols);
-      const colZ = new Float32Array(cols);
-      const colNx = new Float32Array(cols);
-      const colNz = new Float32Array(cols);
-      let lastPhaseRad = NaN;
-
-      const fastUpdateFlagWave = (phaseRad) => {
-        if (Math.abs(phaseRad - lastPhaseRad) < 1e-4) return;
-        lastPhaseRad = phaseRad;
-
-        const p16 = phaseRad * 1.6;
-        for (let ix = 0; ix < cols; ix++) {
-          const u = colU[ix];
-          const a1 = u * 4.8 - phaseRad;
-          const a2 = u * 9.5 - p16;
-          const s1 = Math.sin(a1);
-          const c1 = Math.cos(a1);
-          const s2 = Math.sin(a2);
-          const c2 = Math.cos(a2);
-
-          colZ[ix] = s1 * (0.22 * u) + s2 * (0.05 * u);
-          colDroop[ix] = -0.08 * u * u + Math.cos(u * 4.2 - phaseRad) * (0.04 * u);
-
-          // Exact derivative dzWave/dx = (dzWave/du) / flagW; surface normal N = normalize(-dz/dx, 0, 1)
-          const dzDu = c1 * (1.056 * u) + s1 * 0.22 + c2 * (0.475 * u) + s2 * 0.05;
-          const dzDx = dzDu * invFlagW;
-          const invLen = 1.0 / Math.sqrt(dzDx * dzDx + 1.0);
-          colNx[ix] = -dzDx * invLen;
-          colNz[ix] = invLen;
-        }
-
-        const pArr = posAttr.array;
-        const nArr = normAttr.array;
-        let idx3 = 0;
-        for (let iy = 0; iy < rows; iy++) {
-          const by = rowBaseY[iy];
-          for (let ix = 0; ix < cols; ix++) {
-            pArr[idx3] = colX[ix];
-            pArr[idx3 + 1] = by + colDroop[ix];
-            pArr[idx3 + 2] = colZ[ix];
-            nArr[idx3] = colNx[ix];
-            nArr[idx3 + 1] = 0.0;
-            nArr[idx3 + 2] = colNz[ix];
-            idx3 += 3;
-          }
-        }
-        posAttr.needsUpdate = true;
-        normAttr.needsUpdate = true;
-      };
-
-      // Initialize cleanly to current phase so normals match immediately
-      fastUpdateFlagWave(curPhase);
-
-      z4.setConstructionState = (globalStep = 11.0) => {
-        const s = Number.isFinite(globalStep) ? globalStep : 11.0;
-        if (s >= 8.90) {
-          fastUpdateFlagWave(0.65 + (s - 8.90) * 6.0);
-        }
-        if (s >= 8.80) {
-          anemometerGroup.rotation.y = (s - 8.80) * 8.5;
-        }
-        opticGroup.rotation.y = s >= 9.80 ? (s - 9.80) * 3.2 : 0;
-      };
-
-      z4.updateSummitAmbient = (elapsedSec = 0, step = 11.0) => {
-        if (step >= 8.90) {
-          fastUpdateFlagWave(0.65 + elapsedSec * 2.4 + (step - 8.90) * 1.5);
-        }
-        if (step >= 8.80) {
-          anemometerGroup.rotation.y = elapsedSec * 1.8 + (step - 8.80) * 2.0;
-        }
-        if (step >= 9.80) {
-          opticGroup.rotation.y = elapsedSec * 0.42;
-        }
-      };
-
-      z4.__s4AnalyticalFlagInstalled = true;
-      analyticalFlagWaveInstalled = true;
-    }
-  }
-
   return {
     clippedMaterialSharingInstalled,
     analyticalFlagWaveInstalled,
@@ -349,7 +220,7 @@ export function optimizeKinematicsEngine({ THREE, towerController } = {}) {
 }
 
 /**
- * Unifies `onBeforeCompile` + `customProgramCacheKey` across all Tower & Paris 1889 PBR/sketch
+ * Unifies `onBeforeCompile` + `customProgramCacheKey` across all Tower & Tehran world PBR/sketch
  * materials so constant per-material floats pass through uniforms instead of recompiling
  * dozens of duplicate 16-light + shadow + triplanar GLSL programs.
  */
@@ -638,39 +509,7 @@ float s2BandLimitedSin( float coord ) {
       }
 
       if (hasPbr) {
-        let specialSnippet = '';
-        if (specialMode === 1) {
-          specialSnippet = `
-      vec2 pbrPierLocal = vPbrWorldPos.xz - sign( vPbrWorldPos.xz + vec2( 1e-4 ) ) * vec2( 51.9535 );
-      vec2 pbrPierAbs = abs( pbrPierLocal );
-      float pbrPierBox = max( pbrPierAbs.x, pbrPierAbs.y );
-      float pbrApronMask = ( 1.0 - smoothstep( 14.85, 15.35, pbrPierBox ) ) * smoothstep( 10.8, 11.4, pbrPierBox );
-      if ( pbrApronMask > 0.005 && abs( vPbrWorldNormal.y ) > 0.65 ) {
-        vec2 pbrSlabGrid = abs( fract( pbrPierLocal / 0.96 + 0.5 ) - 0.5 );
-        float pbrJointDist = min( pbrSlabGrid.x, pbrSlabGrid.y );
-        float pbrBorderJoint = abs( pbrPierBox - 15.05 );
-        float pbrGroove = 1.0 - smoothstep( 0.012, 0.038, min( pbrJointDist, pbrBorderJoint * 0.5 ) );
-        vec3 pbrStoneTint = vec3( 0.965, 0.945, 0.905 ) * ( 1.0 - 0.24 * pbrGroove );
-        pbrAlbedoMod = mix( pbrAlbedoMod, pbrStoneTint, pbrApronMask * 0.85 );
-        pbrRoughSample = mix( pbrRoughSample, 0.78 + 0.18 * pbrGroove, pbrApronMask * 0.85 );
-        pbrAoSample *= mix( 1.0, 1.0 - 0.36 * pbrGroove, pbrApronMask );
-        vec2 pbrGradJ = sign( fract( pbrPierLocal / 0.96 + 0.5 ) - 0.5 ) * pbrGroove * 0.45 * pbrApronMask;
-        pbrWorldDeltaN += vec3( pbrGradJ.x, 0.0, pbrGradJ.y );
-      }
-      float pbrPierContactAo = mix( 0.58, 1.0, smoothstep( 11.6, 15.6, pbrPierBox ) );
-      float pbrUnderTowerAo = mix( 0.91, 1.0, smoothstep( 24.0, 74.0, length( vPbrWorldPos.xz ) ) );
-      pbrAoSample *= pbrPierContactAo * pbrUnderTowerAo;
-      float pbrAxialPath = ( 1.0 - smoothstep( 11.0, 18.0, abs( vPbrWorldPos.x ) ) );
-      pbrRoughSample = clamp( pbrRoughSample - 0.04 * pbrAxialPath, 0.08, 1.0 );`;
-        } else if (specialMode === 2) {
-          specialSnippet = `
-      float pbrWaterDamp = smoothstep( -1.55, -4.25, vPbrWorldPos.y );
-      if ( pbrWaterDamp > 0.005 ) {
-        pbrAlbedoMod *= mix( vec3( 1.0 ), vec3( 0.68, 0.69, 0.66 ), pbrWaterDamp );
-        pbrRoughSample = mix( pbrRoughSample, 0.24, pbrWaterDamp * 0.88 );
-        pbrAoSample *= mix( 1.0, 0.82, pbrWaterDamp );
-      }`;
-        }
+        const specialSnippet = '';
 
         const tapSnippet = optimizeTriplanarTaps
           ? `
@@ -1141,7 +980,7 @@ export function prewarmSceneShaders({
   try {
     scene.__s4InOffscreenPrewarm = true;
     for (const item of savedChildVis) {
-      if (!item.child.isLight && item.child.name !== 'paris_1889_atmosphere') {
+      if (!item.child.isLight && item.child.name !== 'tehran_milad_atmosphere') {
         const hasLight = (() => {
           let found = false;
           item.child.traverse((o) => {

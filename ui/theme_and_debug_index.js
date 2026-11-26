@@ -1,11 +1,11 @@
 /**
- * Eiffel Tower 1889 Museum Exhibition — Theme, Intro, Playthrough & Debug Barrel
- * Directory: museum_v2/stage8_public_domain/ui/
+ * Milad Tower 3D Exhibition — Theme, Intro, Playthrough & Debug Barrel
+ * Directory: ui/
  *
  * Exports:
- *  - Neutral black/white/grey UI palette tokens (`chroma = 0`) + Stage 5 & Stage 6 DOM compliance auditors
- *  - Post-load full-3D `LandingIntro` (`#museum-landing-intro` + `#btn-landing-explore`: EN `'Explore'`, FR `'Explorer'`)
- *  - Quiet top-right `MuseumHeader` (`EN · FR` + Pure View)
+ *  - Neutral black/white/grey UI palette tokens (`chroma = 0`) + DOM compliance auditors
+ *  - Post-load full-3D `LandingIntro` (`#museum-landing-intro` + `#btn-landing-explore`: EN `'Explore'`, FA `'کاوش'`)
+ *  - Quiet top-right `MuseumHeader` (`EN · FA` + Pure View)
  *  - Unified single chronological `WalkthroughController` (`#exhibition-walkthrough-bar`, 12-stop loop, no counter)
  *  - Zero-footprint engineering `DebugDrawer` (`?debug=1` or `Ctrl+Shift+D`)
  *  - Turnkey `mountExhibitionThemeAndDebug(context)` (aliased as `initStage1MuseumUI`) wiring helper for `app.js`
@@ -72,7 +72,7 @@ export function quarantineLegacyStage3Chrome(doc = typeof document !== 'undefine
  */
 export function mountExhibitionThemeAndDebug(ctx = {}) {
   const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
-  const lang = ctx.lang || 'en';
+  const lang = ctx.lang || 'fa';
   const initialLanding =
     ctx.startInLanding !== undefined
       ? Boolean(ctx.startInLanding)

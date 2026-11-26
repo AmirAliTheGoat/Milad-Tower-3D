@@ -1,51 +1,19 @@
 /**
  * Chronological Story Walkthrough + Hero 3D Showcase Loop Data (`story_and_archive/walkthrough_data.js`)
- * Grounded strictly in verified Milad Tower (Borj-e Milad, Tehran, 1997–2008) facts and
- * calibrated 3D architectural cameras in `data/catalog/photo_cameras_3d.json`.
+ * Grounded strictly in verified Milad Tower (Borj-e Milad, Tehran, 1997–2008) facts,
+ * real archival photographs, and calibrated 3D cameras in `data/catalog/photo_cameras_3d.json`.
  *
  * Key Guarantees:
- *   - 12 stops forming a seamless loop starting and ending on the full 435-meter Tower (`step = 11.0`):
- *       * Stop 1 (`#55`): Master 435 m Architectural Elevation & Cross-Section Blueprint
- *       * Stops 2–11 (`#13, #09, #51, #23, #14, #01, #46, #18, #36, #38`): 10 verified 1997–2008 milestones
- *       * Stop 12 (`photoId: null`): Unobstructed Complete 435 m Milad Tower 3D Showcase (`step = 11.0`)
+ *   - 9 stops forming a seamless chronological loop:
+ *       * Stops 1–8 (`#13, #09, #51, #23, #14, #01, #46, #38`): 8 real construction & completion plates
+ *       * Stop 9 (`photoId: null`): Unobstructed Complete 435 m Milad Tower 3D Showcase (`step = 11.0`)
  *   - Full English (`en`) and Persian / Farsi (`fa`) copy, with whole-meter dimensions and colon-free titles.
  */
 
 export const WALKTHROUGH_STOPS = Object.freeze([
   {
     stopIndex: 1,
-    stopId: 'stop_01_design_elevation_1889',
-    kind: 'calibrated_archival_photo',
-    primaryPhotoId: '55',
-    calibratedStep: 11.0,
-    dateLabel: {
-      en: '1994–2008',
-      fa: '۱۳۷۳ تا ۱۳۸۷ (1994–2008)',
-    },
-    shortLabel: {
-      en: '1994–2008 · Master Elevation',
-      fa: '۱۳۷۳ تا ۱۳۸۷ · نقشه نمای کل برج',
-    },
-    elevationSummary: {
-      en: '66 m Foundation · 315 m Concrete Shaft · 12-Story Head · 435 m Spire',
-      fa: 'فونداسیون ۶۶ متر · بدنه ۳۱۵ متر · رأس ۱۲ طبقه · نوک دکل ۴۳۵ متر',
-    },
-    headline: {
-      en: 'Designing the 435-Meter Milad Tower',
-      fa: 'طراحی برج ۴۳۵ متری میلاد تهران',
-    },
-    narrative: {
-      en: 'Conceived by Iranian architect Dr. Mohammad Reza Hafezi and built for the Municipality of Tehran under Yadman Sazeh, Milad Tower merges Persian octagonal geometry with modern telecommunications engineering across a 315-meter concrete shaft, a 60-meter-wide 12-story head, and a 120-meter steel antenna reaching 435 meters.',
-      fa: 'برج میلاد به طراحی دکتر محمدرضا حافظی و کارفرمایی شهرداری تهران (یادمان سازه)، هندسه هشت‌ضلعی معماری ایرانی را با مهندسی مخابراتی مدرن در بدنه بتنی ۳۱۵ متری، سازه رأس ۱۲ طبقه به قطر ۶۰ متر و دکل فولادی ۱۲۰ متری تا ارتفاع ۴۳۵ متر ترکیب می‌کند.',
-    },
-    placard: {
-      normBboxXYWH: [0.04, 0.08, 0.28, 0.34],
-      surfaceTheme: 'light_vellum',
-    },
-  },
-  {
-    stopIndex: 2,
-    stopId: '1887_05_caissons',
+    stopId: 'stop_01_1997_gisha_excavation',
     kind: 'calibrated_archival_photo',
     primaryPhotoId: '13',
     calibratedStep: 0.50,
@@ -58,58 +26,89 @@ export const WALKTHROUGH_STOPS = Object.freeze([
       fa: '۱۳۷۶ تا ۱۳۷۸ · گودبرداری تپه گیشا',
     },
     elevationSummary: {
-      en: '14 m Deep Seismic Pit · Gisha Hilltop Bedrock Bed',
-      fa: 'گود لرزه‌ای ۱۴ متری · بستر سنگی تپه گیشا',
+      en: '14 m Deep Circular Seismic Pit · Gisha Hilltop Bedrock Bed',
+      fa: 'گود دایره‌ای لرزه‌ای ۱۴ متری · بستر سنگی تپه گیشا',
     },
     headline: {
       en: 'Geotechnical Excavation on Gisha Hilltop',
       fa: 'گودبرداری ژئوتکنیکی بر فراز تپه گیشا',
     },
     narrative: {
-      en: 'After evaluating 17 candidate sites across Tehran, planners chose Gisha Hilltop in northwest Tehran for its elevated bedrock between Hemmat, Hakim, Chamran, and Sheikh Fazlollah Nouri Expressways. Crews excavated a 14-meter-deep circular foundation bed designed to anchor a 150,000-ton landmark in an active seismic zone.',
-      fa: 'پس از مطالعه ۱۷ نقطه در تهران، تپه گیشا در شمال‌غرب پایتخت به دلیل موقعیت بلند و بستر مناسب در میان بزرگراه‌های همت، حکیم، چمران و شیخ فضل‌الله نوری برگزیده شد. گود دایره‌ای به عمق ۱۴ متر برای مهار سازه‌ای ۱۵۰ هزار تنی در پهنه لرزه‌خیز حفر گردید.',
+      en: 'After evaluating 17 candidate locations across Tehran, engineers selected Gisha Hilltop for its elevated bedrock between Hemmat, Hakim, Chamran, and Sheikh Fazlollah Nouri Expressways. Crews excavated a 14-meter-deep circular foundation pit engineered to anchor a 150,000-ton landmark in a high-seismic zone.',
+      fa: 'پس از مطالعه ۱۷ نقطه در تهران، تپه گیشا در شمال‌غرب پایتخت به دلیل موقعیت بلند و بستر سنگی در میان بزرگراه‌های همت، حکیم، چمران و شیخ فضل‌الله نوری برگزیده شد. گود دایره‌ای به عمق ۱۴ متر برای مهار سازه‌ای ۱۵۰ هزار تنی در پهنه لرزه‌خیز حفر گردید.',
     },
     placard: {
-      normBboxXYWH: [0.03, 0.04, 0.36, 0.28],
+      normBboxXYWH: [0.03, 0.03, 0.34, 0.28],
       surfaceTheme: 'light_vellum',
     },
   },
   {
-    stopIndex: 3,
-    stopId: '1887_07_base_shoes',
+    stopIndex: 2,
+    stopId: 'stop_02_1999_foundation_mat',
     kind: 'calibrated_archival_photo',
     primaryPhotoId: '09',
-    calibratedStep: 1.40,
+    calibratedStep: 1.05,
     dateLabel: {
       en: '1999–2000',
       fa: '۱۳۷۸ تا ۱۳۷۹ (1999–2000)',
     },
     shortLabel: {
-      en: '1999–2000 · 66 m Foundation Mat',
-      fa: '۱۳۷۸ تا ۱۳۷۹ · فونداسیون ۶۶ متری',
+      en: '1999–2000 · 66 m Rebar Mat',
+      fa: '۱۳۷۸ تا ۱۳۷۹ · آرماتوربندی پی ۶۶ متری',
     },
     elevationSummary: {
-      en: '66 m Circular Concrete Mat · 63,000 m³ Project Concrete',
-      fa: 'فونداسیون دایره‌ای ۶۶ متر · ۶۳٬۰۰۰ متر مکعب بتن پروژه',
+      en: '66 m Circular Rebar Cage (3–5 m Thick) · 63,000 m³ Project Concrete',
+      fa: 'قفسه آرماتوربندی ۶۶ متر · ۶۳٬۰۰۰ متر مکعب بتن کل پروژه',
     },
     headline: {
       en: 'The 66-Meter Reinforced Concrete Foundation Mat',
-      fa: 'فونداسیون گسترده بتنی به قطر ۶۶ متر',
+      fa: 'آرماتوربندی فونداسیون ۶۶ متری و جرثقیل مرکزی',
     },
     narrative: {
-      en: 'General contractor Boland Payeh Co. cast the massive 66-meter-diameter circular reinforced concrete raft and tapered transition pedestal at the pit floor. Across the completed tower, approximately 63,000 cubic meters of high-strength concrete and dense seismic reinforcement carry wind and earthquake forces safely into Gisha Hill.',
-      fa: 'پیمانکار عمومی، شرکت بلندپایه، پی گسترده دایره‌ای بتنی به قطر ۶۶ متر و پایه انتقالی شیب‌دار را در کف گود بتن‌ریزی کرد. در کل برج حدود ۶۳٬۰۰۰ متر مکعب بتن مقاوم و شبکه آرماتوربندی سنگین نیروهای باد و زلزله را به تپه گیشا منتقل می‌کند.',
+      en: 'Inside the open 14-meter pit around a central erection tower crane, Boland Payeh crews tied dense concentric rings of vertical and hoop reinforcing steel before pouring the 66-meter-diameter monolithic mat foundation. Across the completed tower, roughly 63,000 cubic meters of structural concrete anchor the structure into Gisha Hill.',
+      fa: 'در کف گود ۱۴ متری و پیرامون جرثقیل مرکزی، گروه مهندسی بلندپایه حلقه‌های متراکم آرماتورهای عمودی و محیطی را پیش از بتن‌ریزی پی گسترده ۶۶ متری به هم بافتند. در کل برج حدود ۶۳٬۰۰۰ متر مکعب بتن مسلح نیروها را به بستر تپه منتقل می‌کند.',
     },
     placard: {
-      normBboxXYWH: [0.04, 0.04, 0.36, 0.28],
+      normBboxXYWH: [0.62, 0.03, 0.35, 0.26],
+      surfaceTheme: 'light_vellum',
+    },
+  },
+  {
+    stopIndex: 3,
+    stopId: 'stop_03_2000_transition_pedestal',
+    kind: 'calibrated_archival_photo',
+    primaryPhotoId: '51',
+    calibratedStep: 1.45,
+    dateLabel: {
+      en: '2000',
+      fa: '۱۳۷۹ (2000)',
+    },
+    shortLabel: {
+      en: '2000 · Conical Transition Pedestal',
+      fa: '۱۳۷۹ · پایه انتقالی مخروطی',
+    },
+    elevationSummary: {
+      en: '16-Sided Tapered Pedestal · 16 Radial Shear Buttresses',
+      fa: 'پایه شانزده‌ضلعی مخروطی · ۱۶ پشت‌بند شعاعی برشی',
+    },
+    headline: {
+      en: 'Conical Transition Pedestal and Radial Shear Buttresses',
+      fa: 'سازه انتقالی مخروطی و پشت‌بندهای شعاعی برشی',
+    },
+    narrative: {
+      en: 'Directly atop the circular foundation raft, workers formed a 16-sided tapered concrete transition cone braced by 16 radial shear buttresses and heavy starter rebar. This transition structure channels bending and seismic forces from the narrow concrete shaft uniformly across the 66-meter mat below.',
+      fa: 'مستقیماً بر روی دال دایره‌ای پی، سازه انتقالی شانزده‌وجهی و مخروطی‌شکل همراه با ۱۶ دیوار پشت‌بند شعاعی قالب‌بندی و بتن‌ریزی شد تا نیروهای خمشی و لرزه‌ای بدنه بلند برج را به شکل یکنواخت به فونداسیون ۶۶ متری منتقل کند.',
+    },
+    placard: {
+      normBboxXYWH: [0.62, 0.03, 0.35, 0.26],
       surfaceTheme: 'light_vellum',
     },
   },
   {
     stopIndex: 4,
-    stopId: '1888_01_14_lattice_closeup',
+    stopId: 'stop_04_2000_slipform_shaft',
     kind: 'calibrated_archival_photo',
-    primaryPhotoId: '51',
+    primaryPhotoId: '23',
     calibratedStep: 3.15,
     dateLabel: {
       en: '2000–2002',
@@ -120,211 +119,118 @@ export const WALKTHROUGH_STOPS = Object.freeze([
       fa: '۱۳۷۹ تا ۱۳۸۱ · قالب لغزنده بدنه',
     },
     elevationSummary: {
-      en: '8-Lobed Octagonal Core · 4 Trapezoidal Wings · 1,693 Steps',
-      fa: 'هسته هشت‌پر بتنی · ۴ بال ذوزنقه‌ای · ۱٬۶۹۳ پله اضطراری',
+      en: '8-Lobed Octagonal Core · Hydraulic Climbing Deck · 1,693 Steps',
+      fa: 'هسته هشت‌پر بتنی · سکوی قالب لغزنده · ۱٬۶۹۳ پله اضطراری',
     },
     headline: {
       en: 'Slip-Forming the 8-Lobed Concrete Shaft',
       fa: 'اجرای قالب لغزنده بدنه بتنی هشت‌پر',
     },
     narrative: {
-      en: 'From 2000 onward, hydraulic slip-forming equipment climbed continuously upward to cast the octagonal central shaft and four projecting trapezoidal wings. Three wings house six high-speed panoramic glass elevator shafts, while the fourth wing encloses an emergency concrete stairwell of 1,693 steps.',
-      fa: 'از سال ۱۳۷۹، سامانه قالب لغزنده هیدرولیکی به صورت پیوسته بالا رفت و هسته مرکزی هشت‌ضلعی به همراه چهار بال ذوزنقه‌ای را اجرا کرد. سه بال محل حرکت شش آسانسور شیشه‌ای پرسرعت است و بال چهارم راهپله اضطراری با ۱٬۶۹۳ پله را در خود جای می‌دهد.',
+      en: 'Encircling the climbing concrete core with a stepped circular steel work deck, continuous hydraulic slip-forming equipment jacked upward around the clock to cast the octagonal spine and four trapezoidal wings—housing six panoramic elevator shafts and a 1,693-step emergency stairwell.',
+      fa: 'با سکوی دایره‌ای معلق بر فراز هسته مرکزی، سامانه قالب لغزنده هیدرولیکی به‌صورت پیوسته بالا رفت تا بدنه هشت‌ضلعی و چهار بال ذوزنقه‌ای را با شش چاهک آسانسور شیشه‌ای و ۱٬۶۹۳ پله اضطراری اجرا کند.',
     },
     placard: {
-      normBboxXYWH: [0.04, 0.06, 0.34, 0.30],
+      normBboxXYWH: [0.03, 0.05, 0.26, 0.32],
       surfaceTheme: 'light_vellum',
     },
   },
   {
     stopIndex: 5,
-    stopId: '1888_01_07_first_stage_timelapse_1',
+    stopId: 'stop_05_2003_shaft_topout',
     kind: 'calibrated_archival_photo',
-    primaryPhotoId: '23',
+    primaryPhotoId: '14',
     calibratedStep: 4.75,
     dateLabel: {
-      en: '2002–2003',
-      fa: '۱۳۸۱ تا ۱۳۸۲ (2002–2003)',
+      en: '2003',
+      fa: '۱۳۸۲ (2003)',
     },
     shortLabel: {
-      en: '2002–2003 · 315 m Shaft & Lobby',
-      fa: '۱۳۸۱ تا ۱۳۸۲ · بدنه ۳۱۵ متری و لابی',
+      en: '2003 · 315 m Shaft Top-Out',
+      fa: '۱۳۸۲ · تکمیل بدنه ۳۱۵ متری',
     },
     elevationSummary: {
-      en: '315 m Concrete Shaft Top-Out · 27 m 6-Story Base Lobby',
-      fa: 'تکمیل بدنه بتنی ۳۱۵ متر · ساختمان لابی ۶ طبقه ۲۷ متری',
+      en: '315 m Completed Concrete Shaft · Windowed Elevator Wings',
+      fa: 'تکمیل بدنه بتنی ۳۱۵ متری · بال‌های آسانسور و کارگاه پایه',
     },
     headline: {
-      en: '315-Meter Shaft Top-Out and 6-Story Base Lobby',
-      fa: 'تکمیل بدنه ۳۱۵ متری و لابی ۶ طبقه پایه',
+      en: '315-Meter Concrete Shaft Top-Out Above Gisha',
+      fa: 'تکمیل بدنه بتنی ۳۱۵ متری بر فراز گیشا',
     },
     narrative: {
-      en: 'By 2003 the slip-formed concrete shaft reached its full 315-meter height, establishing the vertical structural spine of Tehran’s skyline. Surrounding its base rose the 27-meter-high, 6-story travertine and glass lobby pavilion housing entrance halls, ticket concourses, commercial galleries, and Iranian geometric arches.',
-      fa: 'تا سال ۱۳۸۲ بدنه بتنی به ارتفاع نهایی ۳۱۵ متر رسید و ستون فقرات سازه‌ای برج را بر فراز تهران تثبیت کرد. در پیرامون پایه آن، ساختمان لابی ۶ طبقه به ارتفاع ۲۷ متر با سنگ تراورتن، شیشه و طاق‌های هندسی ایرانی برای پذیرش و نمایشگاه‌ها شکل گرفت.',
+      en: 'Looking steeply downward past the upper climbing work collars as the concrete spine topped out at 315 meters in 2003, the open site below reveals a crucial historical fact: Milad Tower’s 315-meter shaft rose to full height before the surrounding 6-story base lobby was enclosed.',
+      fa: 'این نمای هوایی از کنار عرشه‌های بالایی در سال ۱۳۸۲ نشان می‌دهد که بدنه بتنی با پنجره‌های بال‌های آسانسور پیش از تکمیل و پوشش لابی ۶ طبقه پایه، به ارتفاع نهایی ۳۱۵ متر دست یافته بود.',
     },
     placard: {
-      normBboxXYWH: [0.04, 0.05, 0.34, 0.30],
+      normBboxXYWH: [0.03, 0.05, 0.26, 0.32],
       surfaceTheme: 'light_vellum',
     },
   },
   {
     stopIndex: 6,
-    stopId: '1888_06_12_second_stage_timelapse_2',
+    stopId: 'stop_06_2003_head_steel_struts',
     kind: 'calibrated_archival_photo',
-    primaryPhotoId: '14',
-    calibratedStep: 6.15,
+    primaryPhotoId: '01',
+    calibratedStep: 6.18,
     dateLabel: {
       en: '2003–2005',
       fa: '۱۳۸۲ تا ۱۳۸۴ (2003–2005)',
     },
     shortLabel: {
-      en: '2003–2005 · 12-Story Steel Head',
-      fa: '۱۳۸۲ تا ۱۳۸۴ · نصب سازه فولادی رأس',
+      en: '2003–2005 · V-Struts & Head Trusses',
+      fa: '۱۳۸۲ تا ۱۳۸۴ · دستک‌های پایه و خرپاهای رأس',
     },
     elevationSummary: {
-      en: '247 m to 315 m Elevation · ~2,000 Tons Structural Steel · 12,000 m²',
-      fa: 'تراز ۲۴۷ تا ۳۱۵ متر · حدود ۲٬۰۰۰ تن فولاد · ۱۲٬۰۰۰ متر مربع زیربنا',
+      en: 'Exposed Lobby V-Struts · 247 m to 315 m Steel X-Diagrid Head (60 m Wide)',
+      fa: 'دستک‌های V شکل پایه · شبکه خرپاهای بیرونی رأس در تراز ۲۴۷ تا ۳۱۵ متر',
     },
     headline: {
-      en: 'Heavy-Lift Steel Assembly of the 12-Story Head',
-      fa: 'نصب سنگین سازه فولادی ۱۲ طبقه رأس برج',
+      en: 'Base V-Struts and Exposed 12-Story Steel Head Basket',
+      fa: 'دستک‌های V شکل پایه و سبد فولادی ۱۲ طبقه رأس',
     },
     narrative: {
-      en: 'Between 2003 and 2005, twin climbing cranes hoisted roughly 2,000 tons of fabricated steel trusses into position around the upper shaft from 247 to 315 meters. The cantilevered 12-story head structure encloses 12,000 square meters of floor area—making it one of the largest tower heads ever constructed.',
-      fa: 'میان سال‌های ۱۳۸۲ تا ۱۳۸۴، دو جرثقیل بالارونده حدود ۲٬۰۰۰ تن خرپای فولادی پیش‌ساخته را در تراز ۲۴۷ تا ۳۱۵ متر پیرامون بدنه بتنی نصب کردند. این سازه رأس ۱۲ طبقه با ۱۲٬۰۰۰ متر مربع زیربنا یکی از بزرگ‌ترین رأس‌های برج‌های مخابراتی جهان است.',
+      en: 'From directly beside the exposed diagonal V-struts of the base podium, the camera gazes vertically along the concrete shaft to the 12-story head basket between 247 and 315 meters. Weighing roughly 25,000 tons and spanning 60 meters across, the signature exterior steel X-trusses surround the recessed glass-clad levels.',
+      fa: 'از کنار ستون‌های مایل V شکل لابی نیمه‌ساخته پایه، نگاه رو به بالا از امتداد بدنه بتنی به سبد فولادی ۱۲ طبقه رأس در تراز ۲۴۷ تا ۳۱۵ متر می‌رسد؛ جایی که شبکه خرپاهای ضربدری فولادی به عرض ۶۰ متر پیرامون طبقات درونی خودنمایی می‌کند.',
     },
     placard: {
-      normBboxXYWH: [0.04, 0.05, 0.32, 0.34],
+      normBboxXYWH: [0.03, 0.05, 0.26, 0.32],
       surfaceTheme: 'light_vellum',
     },
   },
   {
     stopIndex: 7,
-    stopId: '1888_09_14_self_supporting_timelapse_3',
-    kind: 'calibrated_archival_photo',
-    primaryPhotoId: '01',
-    calibratedStep: 7.05,
-    dateLabel: {
-      en: '2005–2006',
-      fa: '۱۳۸۴ تا ۱۳۸۵ (2005–2006)',
-    },
-    shortLabel: {
-      en: '2005–2006 · 60 m Basket Facade',
-      fa: '۱۳۸۴ تا ۱۳۸۵ · نمای ۶۰ متری رأس',
-    },
-    elevationSummary: {
-      en: '60 m Maximum Head Width at 280 m · Muqarnas-Inspired Geometry',
-      fa: 'بیشینه قطر ۶۰ متر در تراز ۲۸۰ متر · هندسه الهام‌گرفته از مقرنس',
-    },
-    headline: {
-      en: 'Iranian Geometric Basket Cladding at 60-Meter Span',
-      fa: 'نمای سبد هندسی ایرانی با قطر ۶۰ متر',
-    },
-    narrative: {
-      en: 'Inspired by classical Persian muqarnas corbeling and eight-fold symmetry, the steel basket flares gracefully from the shaft collar to a 60-meter maximum width at 280 meters before stepping inward toward its summit. Metallic architectural cladding and reflective turquoise-tinted curtain glass seal all 12 stories.',
-      fa: 'با الهام از مقرنس‌کاری کلاسیک ایرانی و تقارن هشت‌گانه، سبد فولادی رأس از یقه بدنه به بیرون باز شده و در تراز ۲۸۰ متر به بیشینه عرض ۶۰ متر می‌رسد. پنل‌های فلزی معماری و شیشه‌های کرتین‌وال فیروزه‌ای‌فام، هر ۱۲ طبقه را در بر می‌گیرند.',
-    },
-    placard: {
-      normBboxXYWH: [0.04, 0.05, 0.32, 0.36],
-      surfaceTheme: 'light_vellum',
-    },
-  },
-  {
-    stopIndex: 8,
-    stopId: '1888_12_26_winter_ascent_timelapse_4',
+    stopId: 'stop_07_2006_antenna_collar',
     kind: 'calibrated_archival_photo',
     primaryPhotoId: '46',
-    calibratedStep: 8.85,
+    calibratedStep: 7.45,
     dateLabel: {
       en: '2006–2007',
       fa: '۱۳۸۵ تا ۱۳۸۶ (2006–2007)',
     },
     shortLabel: {
-      en: '2006–2007 · 120 m Antenna Mast',
-      fa: '۱۳۸۵ تا ۱۳۸۶ · دکل ۱۲۰ متری',
+      en: '2006–2007 · 315 m Antenna Collar',
+      fa: '۱۳۸۵ تا ۱۳۸۶ · غلاف پایه دکل در ۳۱۵ متر',
     },
     elevationSummary: {
-      en: '315 m to 435 m Spire · 4 Telescopic Steel Stages · 350 Tons',
-      fa: 'تراز ۳۱۵ تا ۴۳۵ متر · ۴ بخش تلسکوپی فولادی · وزن ۳۵۰ تن',
+      en: '315 m Rooftop Well · Bolted Steel Mast Sleeve · Hemmat–Chamran Interchange',
+      fa: 'حوضچه بام ۳۱۵ متر · غلاف پیچ‌شده فولادی دکل · تقاطع همت و چمران',
     },
     headline: {
-      en: 'Four-Stage Telescopic Lift of the 120-Meter Antenna Mast',
-      fa: 'بالابری تلسکوپی چهارمرحله‌ای دکل ۱۲۰ متری',
+      en: 'Erecting the 120-Meter Antenna Collar at 315 Meters',
+      fa: 'نصب غلاف پایه دکل ۱۲۰ متری در تراز ۳۱۵ متر',
     },
     narrative: {
-      en: 'Between 2006 and 2007, engineers erected the 120-meter, 350-ton steel telecommunications mast in four telescoping sections rising from 315 meters to the 435-meter tip. The mast carries national television and digital radio transmitters, microwave relay dishes, aviation beacons, and weather sensors.',
-      fa: 'در سال‌های ۱۳۸۵ و ۱۳۸۶، دکل مخابراتی فولادی ۱۲۰ متری با وزن ۳۵۰ تن در چهار بخش تلسکوپی از تراز ۳۱۵ متر تا قله ۴۳۵ متری نصب شد. این دکل فرستنده‌های رادیویی، تلویزیونی، لینک‌های مایکروویو و سامانه‌های هواشناسی را پشتیبانی می‌کند.',
+      en: 'High on the 315-meter concrete roof platform above the sweeping Hemmat and Chamran expressway interchange, steelworkers bolted together the heavy cylindrical steel anchor collar inside an octagonal formwork well—preparing the telescoping launch seat for the 120-meter, 350-ton telecommunications mast.',
+      fa: 'بر فراز بام بتنی تراز ۳۱۵ متر مشرف بر گره بزرگراهی همت و چمران، مهندسان غلاف استوانه‌ای سنگین فولادی را با صدها پیچ درون حوضچه هشت‌ضلعی سقف مهار کردند تا سکوی پرتاب دکل ۱۲۰ متری ۳۵۰ تنی آماده شود.',
     },
     placard: {
-      normBboxXYWH: [0.04, 0.05, 0.32, 0.38],
+      normBboxXYWH: [0.03, 0.04, 0.30, 0.28],
       surfaceTheme: 'light_vellum',
     },
   },
   {
-    stopIndex: 9,
-    stopId: '1889_05_completed_axial_timelapse_5',
-    kind: 'calibrated_archival_photo',
-    primaryPhotoId: '18',
-    calibratedStep: 9.85,
-    dateLabel: {
-      en: '2007–2008',
-      fa: '۱۳۸۶ تا ۱۳۸۷ (2007–2008)',
-    },
-    shortLabel: {
-      en: '2007–2008 · Observation & Dining',
-      fa: '۱۳۸۶ تا ۱۳۸۷ · رستوران و سکوهای دید',
-    },
-    elevationSummary: {
-      en: '276 m Revolving Restaurant · 280 m Open Deck · 292 m Gallery',
-      fa: 'رستوران گردان ۲۷۶ متر · سکوی باز ۲۸۰ متر · گالری بسته ۲۹۲ متر',
-    },
-    headline: {
-      en: 'Revolving Restaurant and Panoramic Observation Decks',
-      fa: 'رستوران گردان و سکوهای دید پانورامای تهران',
-    },
-    narrative: {
-      en: 'Interior completion unlocked the public destination floors high above Tehran: the 276-meter revolving restaurant completing one full 360-degree rotation per hour, the 280-meter open-air observation deck overlooking the entire metropolis, and the 292-meter enclosed panoramic gallery and museum.',
-      fa: 'تکمیل فضاهای داخلی طبقات عمومی برج را آماده بهره‌برداری کرد: رستوران گردان در تراز ۲۷۶ متر با یک دور چرخش ۳۶۰ درجه در ساعت، سکوی دید باز در تراز ۲۸۰ متر با چشم‌انداز کامل پایتخت و گالری دید بسته و موزه در تراز ۲۹۲ متر.',
-    },
-    placard: {
-      normBboxXYWH: [0.04, 0.05, 0.34, 0.36],
-      surfaceTheme: 'light_vellum',
-    },
-  },
-  {
-    stopIndex: 10,
-    stopId: '1889_summer_under_the_arch',
-    kind: 'calibrated_archival_photo',
-    primaryPhotoId: '36',
-    calibratedStep: 10.60,
-    dateLabel: {
-      en: '2008',
-      fa: '۱۳۸۷ (2008)',
-    },
-    shortLabel: {
-      en: '2008 · Sky Dome & 7 m/s Lifts',
-      fa: '۱۳۸۷ · گنبد آسمان و آسانسورها',
-    },
-    elevationSummary: {
-      en: '302 m–315 m Glass Sky Dome · 6 Panoramic Elevators at 7 m/s',
-      fa: 'گنبد شیشه‌ای ۳۰۲ تا ۳۱۵ متر · ۶ آسانسور پرسرعت ۷ متر بر ثانیه',
-    },
-    headline: {
-      en: 'Glass Sky Dome and 7 m/s Panoramic Elevators',
-      fa: 'گنبد آسمان شیشه‌ای و آسانسورهای ۷ متر بر ثانیه',
-    },
-    narrative: {
-      en: 'Crowning the 12th level between 302 and 315 meters, the faceted glass-and-steel Sky Dome opens straight upward beneath the mast root. In the three exterior glazed shaft wings, six high-speed panoramic elevators traveling at 7 meters per second transport visitors from base to head in about 45 seconds.',
-      fa: 'در طبقه دوازدهم میان تراز ۳۰۲ تا ۳۱۵ متر، گنبد آسمان شیشه‌ای-فولادی تاج سازه رأس را شکل می‌دهد. در سه بال شیشه‌ای بدنه، شش آسانسور پانورامای پرسرعت با سرعت ۷ متر بر ثانیه مسافران را در حدود ۴۵ ثانیه از لابی به رأس برج می‌رسانند.',
-    },
-    placard: {
-      normBboxXYWH: [0.04, 0.06, 0.34, 0.34],
-      surfaceTheme: 'light_vellum',
-    },
-  },
-  {
-    stopIndex: 11,
-    stopId: '1889_summer_coutan_basin',
+    stopIndex: 8,
+    stopId: 'stop_08_2008_inauguration_alborz',
     kind: 'calibrated_archival_photo',
     primaryPhotoId: '38',
     calibratedStep: 11.0,
@@ -333,29 +239,29 @@ export const WALKTHROUGH_STOPS = Object.freeze([
       fa: '۱۶ مهر ۱۳۸۷ (7 Oct 2008)',
     },
     shortLabel: {
-      en: '7 Oct 2008 · Inauguration',
-      fa: '۱۶ مهر ۱۳۸۷ · گشایش رسمی',
+      en: '7 Oct 2008 · 435 m Complete & Alborz',
+      fa: '۱۶ مهر ۱۳۸۷ · برج ۴۳۵ متری و البرز',
     },
     elevationSummary: {
-      en: '435 m Total Height · Iran’s Tallest Structure · Alborz Backdrop',
-      fa: 'ارتفاع کل ۴۳۵ متر · بلندترین سازه ایران · چشم‌انداز البرز',
+      en: '435 m Total Height · 27 m V-Strut Lobby · 276 m Revolving Restaurant · Sky Dome',
+      fa: 'ارتفاع ۴۳۵ متر · لابی ستون‌دار ۲۷ متر · رستوران گردان ۲۷۶ متر · گنبد آسمان',
     },
     headline: {
-      en: 'Official Inauguration Over Tehran and the Alborz Horizon',
-      fa: 'گشایش رسمی بر فراز تهران و افق البرز',
+      en: 'Completed 435-Meter Tower Against the Alborz Range',
+      fa: 'برج کامل ۴۳۵ متری میلاد در برابر رشته‌کوه البرز',
     },
     narrative: {
-      en: 'Following eleven years of engineering and construction, Milad Tower officially opened on 7 October 2008 (16 Mehr 1387 SH) as the centerpiece of the Tehran International Trade and Convention Center. Rising 435 meters above Gisha Hilltop, it stands as Iran’s tallest structure framed against the Alborz Mountains.',
-      fa: 'پس از یازده سال مهندسی و ساخت، برج میلاد در ۱۶ مهر ۱۳۸۷ (۷ اکتبر ۲۰۰۸) به عنوان کانون مرکز ارتباطات بین‌المللی تهران رسماً گشایش یافت و با ارتفاع ۴۳۵ متر بر فراز تپه گیشا به بلندترین سازه ایران در پس‌زمینه رشته‌کوه البرز تبدیل شد.',
+      en: 'Inaugurated on 7 October 2008 (16 Mehr 1387 SH), Milad Tower stands 435 meters tall from Gisha Hilltop against the snow-covered Alborz Mountains—uniting its exposed V-strut 6-story base lobby, 315-meter shaft, exposed X-diagrid 12-story head housing the 276 m revolving restaurant and 280 m open terrace, faceted Sky Dome, and 120-meter spire.',
+      fa: 'برج میلاد در ۱۶ مهر ۱۳۸۷ (۷ اکتبر ۲۰۰۸) به ارتفاع ۴۳۵ متر بر فراز تپه گیشا و در برابر قله‌های برفی البرز گشایش یافت و لابی ۶ طبقه با دستک‌های V شکل، بدنه ۳۱۵ متری، سبد ۱۲ طبقه با خرپاهای ضربدری، رستوران گردان ۲۷۶ متری، سکوی ۲۸۰ متری، گنبد آسمان و دکل ۱۲۰ متری را به هم پیوند داد.',
     },
     placard: {
-      normBboxXYWH: [0.04, 0.06, 0.34, 0.34],
+      normBboxXYWH: [0.03, 0.05, 0.26, 0.32],
       surfaceTheme: 'light_vellum',
     },
   },
   {
-    stopIndex: 12,
-    stopId: '1889_hero_3d_showcase_finale',
+    stopIndex: 9,
+    stopId: 'stop_09_milad_hero_3d',
     kind: 'hero_3d_model_finale',
     primaryPhotoId: null,
     calibratedStep: 11.0,
@@ -376,8 +282,8 @@ export const WALKTHROUGH_STOPS = Object.freeze([
       fa: 'برج کامل ۴۳۵ متری میلاد در فضای سه‌بعدی',
     },
     narrative: {
-      en: 'Orbit freely around the completed 435-meter reconstruction above Gisha Hilltop, the four encircling Tehran expressways, and the northern Alborz Mountains, or jump directly to four structural close-ups from the 6-story travertine lobby to the Sky Dome and 120-meter antenna mast.',
-      fa: 'آزادانه پیرامون بازسازی سه‌بعدی ۴۳۵ متری برج میلاد بر فراز تپه گیشا، چهار بزرگراه پیرامونی تهران و رشته‌کوه البرز بچرخید یا مستقیماً از چهار نمای معماری، از لابی ۶ طبقه تا گنبد آسمان و دکل ۱۲۰ متری، بازدید کنید.',
+      en: 'Orbit freely around the completed 435-meter reconstruction above Gisha Hilltop, the four encircling Tehran expressways, and the northern Alborz Mountains, or jump directly to four architectural close-ups from the exposed base V-struts to the Sky Dome and 120-meter antenna mast.',
+      fa: 'آزادانه پیرامون بازسازی سه‌بعدی ۴۳۵ متری برج میلاد بر فراز تپه گیشا، چهار بزرگراه پیرامونی تهران و رشته‌کوه البرز بچرخید یا مستقیماً از چهار نمای معماری، از دستک‌های پایه تا گنبد آسمان و دکل ۱۲۰ متری، بازدید کنید.',
     },
     placard: {
       normBboxXYWH: [0.03, 0.08, 0.28, 0.34],
@@ -407,12 +313,12 @@ export const HERO_FINALE_PRESETS = Object.freeze([
     presetId: 'plinths_shoes',
     numeral: 'I',
     label: {
-      en: '6-Story Lobby & 66 m Mat',
-      fa: 'لابی ۶ طبقه و پی ۶۶ متری',
+      en: '6-Story Lobby & V-Struts',
+      fa: 'لابی ۶ طبقه و دستک‌های پایه',
     },
     caption: {
-      en: '27-meter Iranian geometric travertine lobby pavilion resting on the 66-meter circular seismic foundation mat.',
-      fa: 'ساختمان لابی ۶ طبقه به ارتفاع ۲۷ متر با هندسه ایرانی بر روی فونداسیون لرزه‌ای ۶۶ متری.',
+      en: '27-meter Iranian geometric lobby pavilion with perimeter diagonal V-struts resting on the 66-meter circular seismic foundation.',
+      fa: 'ساختمان لابی ۶ طبقه به ارتفاع ۲۷ متر با ستون‌های مایل V شکل پیرامونی بر روی فونداسیون لرزه‌ای ۶۶ متری.',
     },
     position: [84.0, 22.0, 108.0],
     target: [-4.0, 14.5, 0.0],
@@ -439,12 +345,12 @@ export const HERO_FINALE_PRESETS = Object.freeze([
     presetId: 'second_platform',
     numeral: 'III',
     label: {
-      en: '12-Story Head at 280 m',
-      fa: 'سازه رأس ۱۲ طبقه در ۲۸۰ متر',
+      en: '12-Story X-Diagrid Head',
+      fa: 'سبد خرپایی ۱۲ طبقه رأس برج',
     },
     caption: {
-      en: '60-meter-wide cantilevered steel basket housing the 276 m revolving restaurant, 280 m open deck, and 292 m gallery.',
-      fa: 'سبد فولادی به قطر ۶۰ متر شامل رستوران گردان ۲۷۶ متر، سکوی دید باز ۲۸۰ متر و گالری ۲۹۲ متر.',
+      en: '60-meter-wide exterior steel X-diagrid basket framing the 261 m enclosed gallery, 276 m revolving restaurant, 280 m open deck, and 292 m VIP tier.',
+      fa: 'سبد فولادی ۶۰ متری با خرپاهای ضربدری بیرونی دربرگیرنده سکوی ۲۶۱ متر، رستوران گردان ۲۷۶ متر، سکوی ۲۸۰ متر و تراز ۲۹۲ متر.',
     },
     position: [88.0, 266.0, 128.0],
     target: [-4.0, 276.0, 0.0],
@@ -469,26 +375,6 @@ export const HERO_FINALE_PRESETS = Object.freeze([
   },
 ]);
 
-export const LEGACY_CHAPTER_TO_STOP_MAP = Object.freeze({
-  ch1_vision: 1,
-  stop_01_design_elevation_1889: 1,
-  stop_12_full_elevation_1889: 1,
-  ch1_foundations: 2,
-  ch2_foundations: 2,
-  ch2_piers: 3,
-  ch3_first_platform: 4,
-  ch3_first_stage: 5,
-  ch4_second_stage: 6,
-  ch4_second_platform: 7,
-  ch5_summit_ascent: 8,
-  ch5_upper_shaft: 8,
-  ch6_exposition: 9,
-  ch6_inauguration: 11,
-  ch7_legacy: 12,
-  ch7_hero_finale: 12,
-  '1889_hero_3d_showcase_finale': 12,
-});
-
 export function getWalkthroughStop(query) {
   if (query === null || query === undefined) return WALKTHROUGH_STOPS[0];
   if (typeof query === 'number' && Number.isFinite(query)) {
@@ -501,9 +387,6 @@ export function getWalkthroughStop(query) {
     if (idx >= 1 && idx <= WALKTHROUGH_STOPS.length) {
       return WALKTHROUGH_STOPS[idx - 1];
     }
-  }
-  if (LEGACY_CHAPTER_TO_STOP_MAP[key]) {
-    return WALKTHROUGH_STOPS[LEGACY_CHAPTER_TO_STOP_MAP[key] - 1];
   }
   const byStopId = WALKTHROUGH_STOPS.find((s) => s.stopId === key);
   if (byStopId) return byStopId;

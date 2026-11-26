@@ -7,18 +7,18 @@
  *
  * Launches 4 independent critical-path workloads in parallel from `t ~ 0 ms`:
  *   1. Worker A (`floor`): 10 archival world/deck PBR trios (`512x512` & `256x256`) transferred zero-copy
- *   2. Worker B (`tower_and_world`): 10 Tower PBR trios + Tricolore + 4 Paris lithographic/roof/foliage sets
+ *   2. Worker B (`tower_and_world`): 10 Tower PBR trios + 4 Tehran urban/roof/foliage texture sets
  *   3. Catalog JSON fetch: `photo_cameras_3d.json`
- *   4. Stop 01 Archival Elevation (`#55`): high-priority fetch + off-thread `img.decode()`
+ *   4. Stop 01 Elevation Plate: high-priority fetch + off-thread `img.decode()`
  *
  * Includes automatic main-thread fallback if Web Workers are unavailable or blocked.
  */
 
 export const STOP01_PLATE_REL_URL =
-  './src/assets/images/milad_elevation_blueprint_1795459743280.jpg';
+  './src/assets/images/milad_01_excavation_pit.jpg';
 
 export const STOP02_PLATE_REL_URL =
-  './src/assets/images/milad_foundation_shaft_1795459684660.jpg';
+  './src/assets/images/milad_02_foundation_mat_rebar.jpg';
 
 const nowMs = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
@@ -227,8 +227,8 @@ export function startEarlyBootPipeline({
     }
   );
 
-  // 3. Parallel high-priority fetch + off-thread bitmap decode for Stop 01 (`#55` Full Elevation);
-  //    Stop 02 (`#13`, 4.0 MB) prefetches cleanly in idle once Stop 01 opens so cold-boot payload stays lean.
+  // 3. Parallel high-priority fetch + off-thread bitmap decode for Stop 01 (`#13` Excavation Pit);
+  //    Stop 02 (`#09`) prefetches cleanly in idle once Stop 01 opens so cold-boot payload stays lean.
   const stop01ImagePromise = preloadAndDecodeImage(stop01ImageUrl).then((img) => {
     timings.stop01DecodeReadyMs = Number((nowMs() - tStart).toFixed(2));
     return img;

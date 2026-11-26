@@ -1,6 +1,6 @@
 /* ==========================================================================
-   La Tour de 300 Mètres (1887–1889) — Museum Exhibition Design System
-   Stage 5 (`museum_v2`) · Neutral Black / White / Grey Gallery UI Palette
+   Milad Tower 3D (Borj-e Milad, 1994–2008) — Museum Exhibition Design System
+   Neutral Black / White / Grey Gallery UI Palette
    100% Offline · Zero Brown/Sepia UI Tints · Zero Glassmorphism · WCAG AA/AAA
    ========================================================================== */
 
@@ -520,6 +520,14 @@ body.zen-mode #btn-zen-exit:focus-visible {
   flex-shrink: 0;
 }
 
+.m2-landing-hint {
+  margin: 10px 0 0;
+  font-family: var(--font-sans);
+  font-size: 11.8px;
+  line-height: 1.45;
+  color: var(--text-on-dark-muted);
+}
+
 /* While Landing Intro is active, hide walkthrough bar & placards cleanly */
 body.landing-intro-active .m2-placard,
 body.landing-intro-active #museum-placard,
@@ -803,25 +811,123 @@ body.landing-intro-active .exhibition-walkthrough-bar {
   stroke-linejoin: round;
 }
 
-/* Primary Play / Pause Keycap */
+/* Primary Play / Pause Keycap with visible label */
 .walkthrough-btn--play {
-  width: 38px;
+  width: auto;
+  min-width: 78px;
   height: 38px;
-  background-color: var(--surface-plate-elevated);
-  border: 1px solid var(--border-plate-interactive);
-  color: var(--text-on-dark-primary);
+  padding: 0 11px;
+  gap: 5px;
+  background-color: var(--text-on-dark-primary);
+  border: 1px solid var(--text-on-dark-primary);
+  color: var(--bg-museum-canvas);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .walkthrough-btn--play:hover:not(:disabled) {
-  background-color: var(--surface-plate-active);
-  border-color: var(--accent-on-dark-vellum);
-  color: var(--accent-on-dark-vellum);
-}
-
-.walkthrough-btn--play[aria-pressed="true"] {
   background-color: var(--accent-on-dark-vellum);
   border-color: var(--accent-on-dark-vellum);
   color: var(--bg-museum-canvas);
+}
+
+.walkthrough-btn--play[aria-pressed="true"] {
+  background-color: var(--surface-plate-active);
+  border-color: var(--accent-on-dark-vellum);
+  color: var(--text-on-dark-primary);
+}
+
+.walkthrough-play-label {
+  line-height: 1;
+}
+
+/* First-visit Play Hint Callout anchored directly above the Play button */
+.walkthrough-play-hint {
+  position: absolute;
+  left: 12px;
+  bottom: calc(100% + 12px);
+  z-index: 25;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(500px, calc(100vw - 48px));
+  padding: 7px 10px 7px 12px;
+  background-color: var(--surface-plate-plinth);
+  border: 1px solid var(--border-plate-interactive);
+  border-radius: var(--radius-gallery);
+  box-shadow: var(--shadow-plinth);
+  color: var(--text-on-dark-primary);
+}
+
+.walkthrough-play-hint[hidden] {
+  display: none !important;
+}
+
+.walkthrough-play-hint-body {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: var(--text-on-dark-primary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.walkthrough-play-hint-body:hover {
+  color: var(--accent-on-dark-vellum);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.walkthrough-play-hint-close {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-gallery);
+  color: var(--text-on-dark-muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.walkthrough-play-hint-close:hover {
+  color: var(--text-on-dark-primary);
+  border-color: var(--border-plate-subtle);
+  background-color: var(--surface-plate-elevated);
+}
+
+.walkthrough-play-hint-arrow {
+  position: absolute;
+  left: 72px;
+  top: 100%;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--border-plate-interactive);
+}
+
+.walkthrough-play-hint-arrow::after {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: -7px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--surface-plate-plinth);
 }
 
 /* 5.2 Active Exhibit Date Readout (Zero Step Counter) */
@@ -1825,8 +1931,26 @@ body.landing-intro-active .exhibition-walkthrough-bar {
   }
 
   .walkthrough-btn--play {
-    width: 34px;
-    height: 34px;
+    width: auto;
+    min-width: 64px;
+    height: 32px;
+    padding: 0 8px;
+    gap: 4px;
+    font-size: 11px;
+  }
+
+  .walkthrough-play-hint {
+    left: 0;
+    max-width: calc(100vw - 24px);
+    padding: 6px 8px 6px 10px;
+  }
+
+  .walkthrough-play-hint-body {
+    font-size: 11.2px;
+  }
+
+  .walkthrough-play-hint-arrow {
+    left: 58px;
   }
 
   .walkthrough-readout {
@@ -1956,10 +2080,29 @@ html[dir="rtl"] .exhibition-walkthrough-bar {
   direction: ltr;
 }
 
+html[dir="rtl"] .m2-landing-hint,
+html[dir="rtl"] .walkthrough-btn--play,
+html[dir="rtl"] .walkthrough-play-hint,
+html[dir="rtl"] .walkthrough-play-hint-body,
+html[dir="rtl"] .walkthrough-date,
+html[dir="rtl"] .walkthrough-tooltip,
+html[dir="rtl"] .walkthrough-reveal-label {
+  font-family: var(--font-fa);
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+html[dir="rtl"] .m2-landing-hint,
+html[dir="rtl"] .walkthrough-play-hint,
+html[dir="rtl"] .walkthrough-play-hint-body,
 html[dir="rtl"] .walkthrough-date,
 html[dir="rtl"] .walkthrough-tooltip,
 html[dir="rtl"] .walkthrough-reveal-label {
   direction: rtl;
+}
+
+html[dir="rtl"] .walkthrough-play-hint {
+  text-align: right;
 }
 
 html[dir="rtl"] .museum-header {

@@ -1,8 +1,9 @@
 /**
- * English Curatorial Entries for Milad Tower (Borj-e Milad, Tehran, 1994–2008)
+ * English Curatorial Entries for Milad Tower (Borj-e Milad, Tehran, 1997–2008)
  * (`story/chapters_1889_en.js`)
  *
- * Verified architectural & engineering facts grounded in project documentation:
+ * Verified architectural & engineering facts matched 1-to-1 with real archival
+ * construction & completion photographs:
  *   - Architect: Dr. Mohammad Reza Hafezi; General Contractor: Boland Payeh Co.;
  *     Client / Project Management: Yadman Sazeh for the Municipality of Tehran
  *   - Total Height: 435 m (315 m reinforced concrete shaft + 120 m four-stage steel antenna)
@@ -14,102 +15,75 @@
 
 export const CURATION_ENTRIES_EN = [
   {
-    photoId: '55',
-    chronologicalIndex: 0,
-    dateLabel: '1994–2008',
-    title: 'Designing the 435-Meter Milad Tower',
-    vantageLabel: 'Master architectural elevation & structural cross-section',
-    caption:
-      'Designed by Iranian architect Dr. Mohammad Reza Hafezi and commissioned by the Municipality of Tehran through Yadman Sazeh, Milad Tower combines Persian octagonal geometry with a 315-meter reinforced concrete shaft, a 12-story steel head reaching 60 meters across, and a 120-meter steel antenna mast rising to 435 meters.',
-  },
-  {
     photoId: '13',
-    chronologicalIndex: 1,
+    chronologicalIndex: 0,
     dateLabel: '1997–1999',
     title: 'Geotechnical Excavation on Gisha Hilltop',
-    vantageLabel: 'Circular 14-meter seismic foundation pit, northwest Tehran',
+    vantageLabel: 'Open 14-meter circular seismic foundation pit, northwest Tehran',
     caption:
-      'Following site feasibility studies across 17 Tehran locations, Gisha Hilltop was selected for its elevated bedrock profile between the Hemmat, Hakim, Chamran, and Sheikh Fazlollah Nouri expressways. Workers excavated a 14-meter-deep circular pit engineered to anchor a 150,000-ton structure in a high-seismic zone.',
+      'Following feasibility studies across 17 Tehran locations, Gisha Hilltop was selected for its elevated bedrock between the Hemmat, Hakim, Chamran, and Sheikh Fazlollah Nouri expressways. Crews excavated a 14-meter-deep circular seismic pit across northwest Tehran to anchor a 150,000-ton tower.',
   },
   {
     photoId: '09',
-    chronologicalIndex: 2,
+    chronologicalIndex: 1,
     dateLabel: '1999–2000',
     title: 'The 66-Meter Reinforced Concrete Foundation Mat',
-    vantageLabel: 'Foundation raft and transition pedestal on Gisha Hill',
+    vantageLabel: 'Concentric seismic rebar cages and central pit crane on Gisha Hill',
     caption:
-      'Boland Payeh Co. poured a monolithic 66-meter-diameter reinforced concrete foundation mat and tapered transition pedestal at the base of the pit. Across the complete project, approximately 63,000 cubic meters of structural concrete and heavy seismic rebar cages distribute wind and earthquake loads into the hilltop.',
+      'Before pouring the 66-meter-diameter monolithic mat foundation (3 to 4.5 meters thick), crews assembled dense concentric rings of steel rebar around a central tower crane inside the open pit. Across the completed project, roughly 63,000 cubic meters of structural concrete anchor the tower into the hilltop.',
   },
   {
     photoId: '51',
-    chronologicalIndex: 3,
-    dateLabel: '2000–2002',
-    title: 'Slip-Forming the 8-Lobed Concrete Shaft',
-    vantageLabel: 'Continuous hydraulic climbing formwork above Gisha Hill',
+    chronologicalIndex: 2,
+    dateLabel: '2000',
+    title: 'Conical Transition Pedestal and Radial Shear Buttresses',
+    vantageLabel: 'Sixteen-sided tapered concrete base and radial reinforcement walls',
     caption:
-      'Using a continuous hydraulic slip-form system, engineers cast the central octagonal core and four symmetrical trapezoidal wings rising steadily above Tehran. Three wings house six high-speed panoramic glass elevator shafts, while the fourth encloses an emergency staircase of 1,693 steps.',
+      'Rising directly off the circular foundation raft, engineers cast a 16-sided tapered conical pedestal braced by 16 radial shear buttresses. This reinforced transition base funnels massive wind and seismic overturning moments from the tall central shaft into the 66-meter mat below.',
   },
   {
     photoId: '23',
-    chronologicalIndex: 4,
-    dateLabel: '2002–2003',
-    title: '315-Meter Shaft Top-Out and 6-Story Base Lobby',
-    vantageLabel: 'Southern approach looking north toward the Alborz Mountains',
+    chronologicalIndex: 3,
+    dateLabel: '2000–2002',
+    title: 'Slip-Forming the 8-Lobed Concrete Shaft',
+    vantageLabel: 'Elevated view onto the hydraulic climbing formwork and circular work deck',
     caption:
-      'In 2003 the concrete shaft topped out at 315 meters, establishing the central structural spine. Around its foot rose the 27-meter-tall, 6-story octagonal base lobby clad in warm travertine and glass, welcoming visitors with exhibition galleries, ticket halls, and geometric Iranian portals.',
+      'Using a continuous hydraulic slip-form system suspended around a stepped circular work deck, crews cast the central octagonal core and four symmetrical trapezoidal wings upward day and night. Three wings house six high-speed panoramic elevator shafts while the fourth encloses 1,693 emergency steps.',
   },
   {
     photoId: '14',
-    chronologicalIndex: 5,
-    dateLabel: '2003–2005',
-    title: 'Heavy-Lift Steel Assembly of the 12-Story Head',
-    vantageLabel: 'Low-angle structural study of the 247-to-315-meter head pod',
+    chronologicalIndex: 4,
+    dateLabel: '2003',
+    title: '315-Meter Concrete Shaft Top-Out Above Gisha',
+    vantageLabel: 'Steep aerial view down the completed shaft toward Tehran',
     caption:
-      'Weighing roughly 2,000 tons of structural steel, the 12-story head pod was fabricated in segments and hoisted into place around the concrete shaft between 247 and 315 meters. Its cantilevered steel diagrid basket carries 12,000 square meters of usable floor area—one of the largest tower heads in the world.',
+      'By 2003 the slip-formed concrete shaft reached its full 315-meter height, complete with outer elevator openings and top climbing trusses. Notice that in reality the towering concrete spine and work collars stood tall above the open hilltop long before the 6-story base lobby took shape around its foot.',
   },
   {
     photoId: '01',
-    chronologicalIndex: 6,
-    dateLabel: '2005–2006',
-    title: 'Iranian Geometric Basket Cladding at 60-Meter Span',
-    vantageLabel: 'Southeast architectural elevation of the faceted head facade',
+    chronologicalIndex: 5,
+    dateLabel: '2003–2005',
+    title: 'Base V-Struts and Exposed 12-Story Steel Head Basket',
+    vantageLabel: 'Low-angle gaze past the exposed lobby V-struts toward the diamond head trusses',
     caption:
-      'Drawing from traditional Persian muqarnas and octagonal geometric proportions, the head structure flares outward to a maximum diameter of 60 meters at 280 meters elevation before stepping inward toward its glazed crown, clad in metallic architectural panels and reflective curtain glass.',
+      'Looking steeply upward past the diagonal V-struts framing the unfinished 6-story base lobby, the 12-story head structure emerges between 247 and 315 meters as a bold exposed lattice of crisscrossing steel X-trusses reaching 60 meters across and weighing roughly 25,000 tons.',
   },
   {
     photoId: '46',
-    chronologicalIndex: 7,
+    chronologicalIndex: 6,
     dateLabel: '2006–2007',
-    title: 'Four-Stage Telescopic Lift of the 120-Meter Antenna Mast',
-    vantageLabel: 'Upper tower shaft and four-stage steel telecommunications mast',
+    title: 'Erecting the 120-Meter Antenna Collar at 315 Meters',
+    vantageLabel: 'Rooftop assembly atop the head well looking down toward the expressway interchange',
     caption:
-      'Between 2006 and 2007, engineers assembled the 120-meter, 350-ton steel telecommunications mast in four telescoping sections atop the 315-meter shaft, pushing Milad Tower to its full 435-meter height to support broadcast television, digital radio, microwave links, and meteorological telemetry.',
-  },
-  {
-    photoId: '18',
-    chronologicalIndex: 8,
-    dateLabel: '2007–2008',
-    title: 'Revolving Restaurant and Panoramic Observation Decks',
-    vantageLabel: 'High-altitude elevation of the 276 m, 280 m, and 292 m decks',
-    caption:
-      'Interior fitting out completed the signature visitor levels inside the 12-story head: the revolving restaurant at 276 meters making one full 360-degree turn per hour, the open-air observation terrace at 280 meters, and the enclosed panoramic gallery and museum floor at 292 meters.',
-  },
-  {
-    photoId: '36',
-    chronologicalIndex: 9,
-    dateLabel: '2008',
-    title: 'Glass Sky Dome and 7 m/s Panoramic Elevators',
-    vantageLabel: 'Crown study of the 302-to-315-meter Sky Dome and lift wings',
-    caption:
-      'At 302 to 315 meters, the faceted glass-and-steel Sky Dome crowns the head structure with an unobstructed zenith view beneath the antenna base. Below, six high-speed glass elevators traveling at 7 meters per second carry visitors from the lobby to the observation levels in roughly 45 seconds.',
+      'High atop the 315-meter roof deck above the Hemmat and Chamran expressway interchange, crews bolted together the massive circular steel base sleeve inside a recessed octagonal well—anchoring the first section of the 120-meter, 350-ton four-stage telescopic antenna mast.',
   },
   {
     photoId: '38',
-    chronologicalIndex: 10,
+    chronologicalIndex: 7,
     dateLabel: '7 October 2008',
-    title: 'Official Inauguration Over Tehran and the Alborz Horizon',
-    vantageLabel: 'Wide panorama from Gisha Hilltop toward the Alborz range',
+    title: 'Completed 435-Meter Tower Against the Alborz Range',
+    vantageLabel: 'Southern elevation framing Milad Tower against snow-capped northern peaks',
     caption:
-      'On 7 October 2008 (16 Mehr 1387 SH), Milad Tower officially opened to the public as the centerpiece of the Tehran International Trade and Convention Center, standing 435 meters tall as Iran’s tallest structure and a defining modern landmark framed against the snow-capped Alborz Mountains.',
+      'Opened on 7 October 2008 (16 Mehr 1387 SH), Milad Tower stands 435 meters tall—combining its 27-meter V-strut base pavilion, 315-meter concrete shaft, exposed X-diagrid head housing the 276 m revolving restaurant and 280 m observation terrace, glazed Sky Dome, and 120-meter spire against the Alborz Mountains.',
   },
 ];

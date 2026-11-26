@@ -10,9 +10,9 @@
  *      in frozen geometry and arriving glass plates materialize at optical lock.
  *   2. Tactile Continuous Rail Scrubbing (`setTau(..., { scrubbing: true })`):
  *      Smoothly releases locked 2D plates at `0.000 px` jump when dragging along the timeline
- *      rail and damps the 3D camera along a curated exterior Champ-de-Mars elevation spline,
- *      then flies seamlessly (`0.000 px` jump) into the nearest calibrated PnP stop on release.
- *   3. Stop 11 Hero 3D Showcase & Responsive Presets (`HeroFinaleRig`):
+ *      rail and damps the 3D camera along a curated exterior Gisha Hilltop elevation spline,
+ *      then flies seamlessly (`0.000 px` jump) into the nearest calibrated stop on release.
+ *   3. Stop 12 Hero 3D Showcase & Responsive Presets (`HeroFinaleRig`):
  *      Routes Overview + Detail I–IV preset clicks and `Reset View` through viewport- &
  *      placard-aware poses on both desktop (`1440×900`) and mobile (`390×844`), with
  *      deterministic `update(dtSec)` ambient turntable / parallax sway and instant user yield.
@@ -68,8 +68,8 @@ function easeInteractiveStep(u) {
  * Evaluates a curated exterior Tower-framing pose `(position, target, fov)` along the
  * continuous walkthrough rail parameter `tau in [0 .. 10]` during interactive scrubbing.
  */
-export function evaluateScrubExteriorPose(tau, vpWidth = 1440, vpHeight = 900, maxTau = 11.0) {
-  const denom = Math.max(10.0, Number(maxTau) || 11.0);
+export function evaluateScrubExteriorPose(tau, vpWidth = 1440, vpHeight = 900, maxTau = 8.0) {
+  const denom = Math.max(8.0, Number(maxTau) || 8.0);
   const u = clamp((Number(tau) || 0) / denom, 0, 1);
   const s = smoothstepCubic(u);
   const aspect = Math.max(1, vpWidth) / Math.max(1, vpHeight);
@@ -126,7 +126,6 @@ export function installStage3CameraChoreography({
     const prevBefore = targetScene.onBeforeRender;
     const prevAfter = targetScene.onAfterRender;
     let savedFogState = null;
-    let cachedExpoGrandGroup = undefined;
 
     targetScene.onBeforeRender = function s5TelephotoBeforeRender(
       renderer,
@@ -144,12 +143,6 @@ export function installStage3CameraChoreography({
         if (rCamXZ > 540.0 && !savedFogState) {
           const teleShift = Math.max(0.0, rCamXZ - 480.0);
           const mu = app.parisWorld?.mistUniforms || null;
-          if (cachedExpoGrandGroup === undefined) {
-            cachedExpoGrandGroup = scn.getObjectByName('cdm_dome_central_machines') || null;
-          }
-          // Only hide South Expo Dôme Central & Galerie des Machines when camera is well past Z = 820m
-          // (where Dome is already >1.5x off-screen during Hero <-> #55 and #55 <-> #13 flights, preventing any visible pop!).
-          const hideSouthExpo = cam.position.z > 820.0 && Boolean(cachedExpoGrandGroup?.visible);
           savedFogState = {
             fogNear: scn.fog.near,
             fogFar: scn.fog.far,
@@ -158,11 +151,7 @@ export function installStage3CameraChoreography({
             inkCamInner: mu?.uInkCamFadeInner ? mu.uInkCamFadeInner.value : null,
             inkCamOuter: mu?.uInkCamFadeOuter ? mu.uInkCamFadeOuter.value : null,
             mu,
-            hidExpoGrand: hideSouthExpo,
           };
-          if (hideSouthExpo && cachedExpoGrandGroup) {
-            cachedExpoGrandGroup.visible = false;
-          }
           if (rCamXZ > 600.0) {
             scn.fog.near = savedFogState.fogNear + teleShift;
             scn.fog.far = savedFogState.fogFar + teleShift;
@@ -180,9 +169,6 @@ export function installStage3CameraChoreography({
 
     targetScene.onAfterRender = function s5TelephotoAfterRender(renderer, scn, cam) {
       if (savedFogState && scn?.fog) {
-        if (savedFogState.hidExpoGrand && cachedExpoGrandGroup) {
-          cachedExpoGrandGroup.visible = true;
-        }
         scn.fog.near = savedFogState.fogNear;
         scn.fog.far = savedFogState.fogFar;
         const { mu } = savedFogState;
@@ -357,8 +343,7 @@ export function installStage3CameraChoreography({
     const targetStep = nextStop.calibratedStep;
     const stepDelta = Math.abs(targetStep - startStep);
 
-    // Distance- & angle-aware flight duration so wide cross-Tower sweeps (#18 -> #36, 700m)
-    // glide majestically (~2.35s) while nearby axial steps stay crisp (~1.38s)
+    // Distance- & angle-aware flight duration tailored to the 9 real-photo stops
     let destPos = HERO_FINALE_CAMERA.position;
     if (nextStop.photoId) {
       const pEntry =
@@ -368,7 +353,7 @@ export function installStage3CameraChoreography({
     }
     const rStartXZ = Math.hypot(camera.position.x, camera.position.z);
     const rDestXZ = Math.hypot(destPos[0], destPos[2]);
-    const isTelephotoFlight = Math.max(rStartXZ, rDestXZ) > 900.0;
+    const isTelephotoFlight = Math.max(rStartXZ, rDestXZ) > 650.0;
     const isTelephotoFoundationsFlight =
       isTelephotoFlight && Math.min(rStartXZ, rDestXZ) < 95.0;
     const chordDistM = Math.hypot(
@@ -380,24 +365,26 @@ export function installStage3CameraChoreography({
       Math.abs(nextIdx - prevIdx) === 1 && Math.min(prevIdx, nextIdx) <= 5;
     let flightDurSec;
     if (isTelephotoFoundationsFlight) {
-      // Stop 1 (#55, step 11.0) <-> Stop 2 (#13, step 0.55): unhurried 3.6 km descent + full reverse/forward build
-      flightDurSec = clamp(4.60 + stepDelta * 0.19, 5.40, 6.80);
+      // Landing / Stop 8 / Stop 9 <-> Pit & base stops: sweeping vertical/horizontal travel
+      flightDurSec = clamp(3.60 + chordDistM * 0.0022, 3.80, 5.20);
     } else if (isTelephotoFlight) {
-      // Landing ('Explore') -> Stop 1 (#55) & Stop 12 <-> Stop 1 telephoto dolly-zoom
-      flightDurSec = clamp(3.85 + stepDelta * 0.15, 3.80, 5.20);
+      // Landing ('Explore') -> Stop 1 or Stop 7 -> Stop 8 pullback
+      flightDurSec = clamp(3.10 + chordDistM * 0.0018, 3.20, 4.40);
     } else if (isAdjacentFirstHalf) {
-      // Calm, museum-paced first-half transitions (Stops 2 <-> 3 <-> 4 <-> 5 <-> 6 <-> 7)
+      // Calm museum-paced progression up the tower (Stops 1..7)
       const loIdx = Math.min(prevIdx, nextIdx);
       const baseFirstHalfSec =
-        loIdx === 1
-          ? 4.65 // #13 <-> #09 154-deg wide-angle foundation sweep
-          : loIdx === 2
-            ? 4.55 // #09 <-> #51 West pier ascent into SW Pile 3 lattice
-            : loIdx === 3
-              ? 5.60 // #51 <-> #23 384m glide out beneath South Arch to Champ-de-Mars
-              : loIdx === 4
-                ? 3.20 // #23 <-> #14 Champ-de-Mars Stage 2 vista zoom
-                : 2.65; // #14 <-> #01 Floor 2 axial glide
+        loIdx === 0
+          ? 2.85 // Stop 1 <-> Stop 2 pit perimeter to rebar mat
+          : loIdx === 1
+            ? 2.65 // Stop 2 <-> Stop 3 rebar mat to conical pedestal
+            : loIdx === 2
+              ? 3.45 // Stop 3 <-> Stop 4 pedestal up to climbing slip-form
+              : loIdx === 3
+                ? 3.10 // Stop 4 <-> Stop 5 slip-form to 315 m shaft top-out aerial
+                : loIdx === 4
+                  ? 3.40 // Stop 5 <-> Stop 6 top aerial sweep down to base V-struts & head basket
+                  : 3.30; // Stop 6 <-> Stop 7 base V-struts up to 315 m antenna collar
       flightDurSec = baseFirstHalfSec;
     } else {
       flightDurSec = clamp(1.45 + chordDistM * 0.0014 + stepDelta * 0.14, 1.50, 2.75);
@@ -523,7 +510,7 @@ export function installStage3CameraChoreography({
     }
 
     if (scrubState.releasedPortal) {
-      const maxTau = Math.max(1, (this._stops?.length || 12) - 1);
+      const maxTau = Math.max(1, (this._stops?.length || 9) - 1);
       scrubState.desiredPose = evaluateScrubExteriorPose(resTau, vw, vh, maxTau);
     }
 
@@ -714,7 +701,7 @@ export function installStage3CameraChoreography({
       pnpAlignment: {
         portalCount: portals.length,
         meanRmsePx: Number(meanRmsePx.toFixed(4)),
-        passed: portals.length >= 11 && meanRmsePx <= 1.85,
+        passed: portals.length >= 8 && meanRmsePx <= 1.85,
         portals,
       },
       motionContinuity: motion,

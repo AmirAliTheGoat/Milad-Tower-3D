@@ -15,6 +15,7 @@ const INTRO_STRINGS = Object.freeze({
       'Iran’s tallest telecommunications tower designed by Dr. Mohammad Reza Hafezi, reconstructed from verified architectural elevations, structural engineering milestones, and Tehran’s Alborz skyline.',
     exploreLabel: 'Explore',
     exploreAria: 'Explore the 1997–2008 Milad Tower exhibition',
+    exploreHint: 'Enter the 1997–2008 timeline from excavation to completion, then press Play.',
   },
   fa: {
     regionAria: 'معرفی نمایشگاه برج میلاد تهران',
@@ -24,6 +25,7 @@ const INTRO_STRINGS = Object.freeze({
       'بلندترین برج مخابراتی ایران به طراحی دکتر محمدرضا حافظی، بازسازی‌شده بر اساس مستندات مهندسی سازه، جدول زمانی ساخت و چشم‌انداز رشته‌کوه البرز.',
     exploreLabel: 'کاوش',
     exploreAria: 'کاوش نمایشگاه سه‌بعدی برج میلاد تهران',
+    exploreHint: 'برای ورود به جدول زمانی ساخت و تماشای خودکار مراحل کلیک کنید.',
   },
 });
 
@@ -57,7 +59,6 @@ export function shouldStartInLandingMode(searchString = undefined) {
     if (params.has('skipIntro') && isTruthyParam(params.get('skipIntro'))) return false;
     if (params.has('stop') && String(params.get('stop') || '').trim() !== '') return false;
     if (params.has('photo') && String(params.get('photo') || '').trim() !== '') return false;
-    if (params.has('chapter') && String(params.get('chapter') || '').trim() !== '') return false;
     if (isTruthyParam(params.get('autoplay'))) return false;
     if (isTruthyParam(params.get('record'))) return false;
     if (isTruthyParam(params.get('deterministic'))) return false;
@@ -72,7 +73,7 @@ export class LandingIntro {
   constructor({
     container = null,
     parent = null,
-    lang = 'en',
+    lang = 'fa',
     active = true,
     onExplore = null,
   } = {}) {
@@ -86,6 +87,7 @@ export class LandingIntro {
     this._subtitleEl = null;
     this._exploreBtn = null;
     this._exploreLabelEl = null;
+    this._exploreHintEl = null;
 
     this._mount(container, parent);
     this._syncDom();
@@ -159,7 +161,11 @@ export class LandingIntro {
       }
     });
 
-    root.append(eyebrow, title, subtitle, exploreBtn);
+    const exploreHint = document.createElement('p');
+    exploreHint.id = 'landing-intro-hint';
+    exploreHint.className = 'm2-landing-hint';
+
+    root.append(eyebrow, title, subtitle, exploreBtn, exploreHint);
 
     this.el = root;
     this._eyebrowEl = eyebrow;
@@ -167,6 +173,7 @@ export class LandingIntro {
     this._subtitleEl = subtitle;
     this._exploreBtn = exploreBtn;
     this._exploreLabelEl = exploreLabel;
+    this._exploreHintEl = exploreHint;
   }
 
   _syncDom() {
@@ -179,6 +186,9 @@ export class LandingIntro {
     this._subtitleEl.textContent = copy.subtitle;
     this._exploreLabelEl.textContent = copy.exploreLabel;
     this._exploreBtn.setAttribute('aria-label', copy.exploreAria);
+    if (this._exploreHintEl) {
+      this._exploreHintEl.textContent = copy.exploreHint;
+    }
 
     this.el.hidden = !this._active;
     this.el.setAttribute('aria-hidden', this._active ? 'false' : 'true');

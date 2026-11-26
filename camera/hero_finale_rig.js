@@ -1,25 +1,25 @@
 /**
- * Stage 3 — Stop 11 Hero 3D Model Showcase & Craftsmanship Rig (`hero_finale_rig.js`)
+ * Stage 3 — Stop 12 Hero 3D Model Showcase & Craftsmanship Rig (`hero_finale_rig.js`)
  *
- * Highlights the craftsmanship of the 3.18M-triangle Eiffel Tower 3D model on Stop 11
+ * Highlights the structural engineering of the 435 m Milad Tower 3D model on Stop 12
  * across both desktop (`1440×900`) and portrait mobile (`390×844`) viewports, with
  * 100% deterministic `update(dtSec)` compatibility for automated video capture.
  *
  * Key Capabilities:
  *   1. Viewport- & Placard-Aware Framing:
  *      - Desktop (`aspect >= 0.82`): Preserves canonical `HERO_FINALE_CAMERA` Overview
- *        (`[240, 52, 440] -> [0, 134, 0], FOV 42°`) keeping `[0 .. 312.275 m]` unclipped,
+ *        (`[285, 118, 495] -> [0, 198, 0], FOV 44°`) keeping `[0 .. 435 m]` unclipped,
  *        and composes Detail I–IV slightly right-of-placard so `.m2-placard` on the left
- *        never occludes the featured ironwork.
+ *        never occludes the featured structure.
  *      - Portrait Mobile (`aspect < 0.82`): Compensates narrow horizontal FOV and bottom-docked
- *        `.m2-placard` on ALL 5 presets (Overview + Detail I–IV) so neither horizontal arches
- *        nor pier plinths are clipped or hidden behind UI chrome.
+ *        `.m2-placard` on ALL 5 presets (Overview + Detail I–IV) so neither the base lobby
+ *        nor the antenna mast is clipped or hidden behind UI chrome.
  *   2. Deterministic `update(dtSec)` Living Architectural Motion:
  *      - `overview`: Serene azimuthal turntable (`0.036 rad/s` during auto-play `finale_orbit`;
- *        `0.015 rad/s` gentle contemplation drift when settled idle on Stop 11).
+ *        `0.015 rad/s` gentle contemplation drift when settled idle on Stop 12).
  *      - `Detail I–IV`: Subtle `C^∞` sinusoidal specular parallax breath (`±2.4°` azimuth,
- *        `±0.55 m` vertical counter-poise) so real sunlight travels across rivets, cast-iron
- *        `sabots`, gilded 72-scientist plaques, and summit lantern glass.
+ *        `±0.55 m` vertical counter-poise) so real sunlight travels across travertine base
+ *        ribs, concrete lobes, steel basket trusses, turquoise glass, and Sky Dome facets.
  *      - Instant Zero-Jump Yield: Yields immediately (`0.000 px` jump) on user pointer/wheel/touch
  *        input and smoothly ramps back in only after `5.0 s` of idle contemplation.
  */

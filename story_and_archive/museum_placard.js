@@ -1,7 +1,7 @@
 /**
  * Stage 5 — Negative-Space Museum Exhibition Placard & Hero 3D Showcase Component
  *
- * Presents chronological 1887–1889 curatorial commentary inside each archival photograph's
+ * Presents chronological 1994–2008 curatorial commentary inside each archival photograph's
  * verified negative-space zone (adapting automatically between neutral light and dark
  * achromatic black/white/grey surfaces), and renders the 5 architectural craftsmanship
  * focus presets on Stop 12 (Hero 3D Model Showcase).
@@ -77,13 +77,13 @@ function normalizeExternalStop(raw, fallback) {
   if (!raw || typeof raw !== 'object') return fallback;
   const base = fallback || WALKTHROUGH_STOPS[0];
   const dateEn = raw.dateLabel?.en || raw.dateShortEn || base.dateLabel.en;
-  const dateFa = raw.dateLabel?.fa || raw.dateShortFa || raw.dateLabel?.fr || raw.dateShortFr || base.dateLabel.fa;
+  const dateFa = raw.dateLabel?.fa || raw.dateShortFa || base.dateLabel.fa;
   const headEn = sanitizeStopTitle(raw.headline?.en || raw.headlineEn || raw.shortTitleEn || base.headline.en);
-  const headFa = sanitizeStopTitle(raw.headline?.fa || raw.headlineFa || raw.shortTitleFa || raw.headline?.fr || raw.headlineFr || base.headline.fa);
+  const headFa = sanitizeStopTitle(raw.headline?.fa || raw.headlineFa || raw.shortTitleFa || base.headline.fa);
   const narrEn = raw.narrative?.en || raw.narrativeEn || base.narrative.en;
-  const narrFa = raw.narrative?.fa || raw.narrativeFa || raw.narrative?.fr || raw.narrativeFr || base.narrative.fa;
+  const narrFa = raw.narrative?.fa || raw.narrativeFa || base.narrative.fa;
   const elevEn = raw.elevationSummary?.en || raw.elevationSummaryEn || base.elevationSummary.en;
-  const elevFa = raw.elevationSummary?.fa || raw.elevationSummaryFa || raw.elevationSummary?.fr || raw.elevationSummaryFr || base.elevationSummary.fa;
+  const elevFa = raw.elevationSummary?.fa || raw.elevationSummaryFa || base.elevationSummary.fa;
   const surfaceTheme =
     raw.placard?.surfaceTheme ||
     (raw.placardSurface === 'dark' ? 'dark_plinth' : raw.placardSurface === 'light' ? 'light_vellum' : null) ||
@@ -141,7 +141,7 @@ export class MuseumPlacard {
       throw new Error('MuseumPlacard requires a valid DOM container element.');
     }
     this.container = container;
-    this.lang = String(options.lang || '').toLowerCase().startsWith('fa') ? 'fa' : 'en';
+    this.lang = String(options.lang || 'fa').toLowerCase().startsWith('en') ? 'en' : 'fa';
     this.topSafePx = Number.isFinite(options.topSafePx) ? options.topSafePx : 68;
     this.bottomSafePx = Number.isFinite(options.bottomSafePx) ? options.bottomSafePx : 92;
     this.onSelectHeroPreset = options.onSelectHeroPreset || null;
@@ -487,14 +487,17 @@ export class MuseumPlacard {
 
     // Mobile / tablet responsive dock handled via CSS media query (`<= 860px`)
     if (vw <= 860) {
+      this._root.style.width = '';
       this._root.style.left = '';
       this._root.style.top = '';
       return;
     }
 
-    const cardRect = this._root.getBoundingClientRect();
-    const cardW = cardRect.width > 40 ? cardRect.width : 352;
-    const cardH = cardRect.height > 40 ? cardRect.height : 220;
+    // Reset any prior adaptive margin width before measuring default card width
+    this._root.style.width = '';
+    const baseRect = this._root.getBoundingClientRect();
+    let cardW = baseRect.width > 40 ? baseRect.width : 344;
+    let cardH = baseRect.height > 40 ? baseRect.height : 220;
 
     let targetX = 24;
     let targetY = this.topSafePx;
@@ -510,20 +513,34 @@ export class MuseumPlacard {
       this._stop.kind !== 'hero_3d_model_finale'
     ) {
       const negativeSpacePx = (Number(bw) || 0.32) * r.width;
+      const leftMarginPx = r.x;
       const rightMarginPx = vw - (r.x + r.width);
-      // On narrow vertical/portrait plates (#14, #01, #46, #18, #55), hang the placard cleanly
-      // in the open museum wall margin beside the frame so 0% of the Tower shaft or drawing is covered.
-      if (negativeSpacePx < cardW * 0.86 && bx < 0.45 && r.x >= cardW + 36) {
-        targetX = Math.max(24, Math.round(r.x - cardW - 18));
+      const minDockMarginPx = 288;
+      const gutterPx = 16;
+
+      // On square & portrait plates (Stops 4, 5, 6, 8), dock the placard cleanly in the
+      // open museum wall margin beside the frame (narrowing gently if margin is 288..376 px)
+      // so 0% of the archival photograph is covered!
+      if (negativeSpacePx < cardW * 0.92 && bx < 0.45 && leftMarginPx >= minDockMarginPx) {
+        const dockW = Math.min(344, Math.floor(leftMarginPx - gutterPx * 2));
+        this._root.style.width = `${dockW}px`;
+        const dockedRect = this._root.getBoundingClientRect();
+        cardW = dockedRect.width > 40 ? dockedRect.width : dockW;
+        cardH = dockedRect.height > 40 ? dockedRect.height : cardH;
+        targetX = Math.max(gutterPx, Math.round(r.x - cardW - gutterPx));
         targetY = Math.max(this.topSafePx, Math.round(r.y + Math.max(12, by * r.height)));
-      } else if (negativeSpacePx < cardW * 0.86 && bx >= 0.45 && rightMarginPx >= cardW + 36) {
-        targetX = Math.round(r.x + r.width + 18);
+      } else if (negativeSpacePx < cardW * 0.92 && bx >= 0.45 && rightMarginPx >= minDockMarginPx) {
+        const dockW = Math.min(344, Math.floor(rightMarginPx - gutterPx * 2));
+        this._root.style.width = `${dockW}px`;
+        const dockedRect = this._root.getBoundingClientRect();
+        cardW = dockedRect.width > 40 ? dockedRect.width : dockW;
+        cardH = dockedRect.height > 40 ? dockedRect.height : cardH;
+        targetX = Math.round(r.x + r.width + gutterPx);
         targetY = Math.max(this.topSafePx, Math.round(r.y + Math.max(12, by * r.height)));
       } else {
         targetX = Math.round(r.x + bx * r.width);
         targetY = Math.round(r.y + by * r.height);
-        // Never allow an in-plate placard (e.g. bottom-left shadow zone on #51) to overhang
-        // below the plate frame or bottom-edge glass inscriptions.
+        // Never allow an in-plate placard to overhang below the plate frame
         const maxInsidePlateY = Math.max(
           Math.round(r.y + 12),
           Math.round(r.y + r.height - cardH - 14)
@@ -536,10 +553,10 @@ export class MuseumPlacard {
       targetY = Math.max(this.topSafePx, Math.round(vh * by));
     }
 
-    const maxX = Math.max(20, vw - cardW - 22);
+    const maxX = Math.max(16, vw - cardW - 16);
     const maxY = Math.max(this.topSafePx, vh - this.bottomSafePx - cardH);
 
-    const clampedX = Math.max(20, Math.min(maxX, targetX));
+    const clampedX = Math.max(16, Math.min(maxX, targetX));
     const clampedY = Math.max(this.topSafePx, Math.min(maxY, targetY));
 
     this._root.style.left = `${clampedX}px`;

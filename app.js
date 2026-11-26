@@ -1,12 +1,12 @@
 /**
- * Eiffel Tower 1889 Museum Edition — Main Exhibit Runtime (`app.js`)
+ * Milad Tower 3D Exhibition — Main Exhibit Runtime (`app.js`)
  *
  * Integrates the Museum Exhibition UI, 3D Lighting/PBR/Sketch/Physics overhaul,
  * and Zero-Jump Optical Camera Choreography:
  *   1. Zero-Jump Optical Camera Choreography (`0.000 px` onset/lock continuity, helical `CatmullRomCurve3`
- *      4-pier obstacle-avoiding paths, Tower-anchored focal gaze, `C¹` Hermite interruption, rising-front
+ *      obstacle-avoiding paths, Tower-anchored focal gaze, `C¹` Hermite interruption, rising-front
  *      drag-to-orbit release)
- *   2. Strict 6-Layer Tower-Focused Viewport & Look Constraints + Polished Stop 12 Hero 3D Model Showcase
+ *   2. Strict 6-Layer Tower-Focused Viewport & Look Constraints + Stop 12 Hero 3D Model Showcase
  *      with responsive desktop/mobile framing and deterministic turntable/craftsmanship sway
  */
 
@@ -40,7 +40,6 @@ import {
 
 import {
   createMuseumPlacard,
-  LEGACY_CHAPTER_TO_STOP_MAP,
 } from './story_and_archive/index.js';
 
 import * as themeDebugMod from './ui/theme_and_debug_index.js';
@@ -69,7 +68,6 @@ function detectStartInLanding() {
     if (params.has('skipIntro') && truthy(params.get('skipIntro'))) return false;
     if (params.has('stop') && String(params.get('stop') || '').trim() !== '') return false;
     if (params.has('photo') && String(params.get('photo') || '').trim() !== '') return false;
-    if (params.has('chapter') && String(params.get('chapter') || '').trim() !== '') return false;
     if (truthy(params.get('autoplay'))) return false;
     if (truthy(params.get('record'))) return false;
     if (truthy(params.get('deterministic'))) return false;
@@ -81,11 +79,11 @@ function detectStartInLanding() {
 }
 
 function detectInitialLang() {
-  if (typeof window === 'undefined') return 'en';
+  if (typeof window === 'undefined') return 'fa';
   const params = new URLSearchParams(window.location.search);
-  const q = params.get('lang');
-  if (q && (q.toLowerCase().startsWith('fa') || q.toLowerCase() === 'persian')) return 'fa';
-  return 'en';
+  const q = String(params.get('lang') || '').trim().toLowerCase();
+  if (q && (q.startsWith('en') || q === 'english')) return 'en';
+  return 'fa';
 }
 
 function probeSoftwareWebGL() {
@@ -211,7 +209,7 @@ async function initMuseumExhibition() {
   bootProfile.rendererSetupMs = Number((performance.now() - tPhase).toFixed(2));
   tPhase = performance.now();
 
-  // 2. Real Physical Lighting Rig, Monochrome Sketch+Mist 1889 Paris & Hero PBR/Kinematics Tower
+  // 2. Real Physical Lighting Rig, Monochrome Sketch+Mist Tehran Setting & Hero PBR/Kinematics Milad Tower
   const atmosphere = createAtmosphereController({
     THREE,
     scene,
@@ -317,8 +315,8 @@ async function initMuseumExhibition() {
     preloadedCatalog: catalogs?.photoCameras || null,
     preloadedImagePromises: bootPipeline
       ? {
-          '55': bootPipeline.stop01ImagePromise,
-          '13': bootPipeline.stop02ImagePromise,
+          '13': bootPipeline.stop01ImagePromise,
+          '09': bootPipeline.stop02ImagePromise,
         }
       : null,
   });
@@ -407,16 +405,8 @@ async function initMuseumExhibition() {
 
     getStep: () => towerController.getStep(),
 
-    setChapter: async (chapterOrStopId, { immediate = false } = {}) => {
-      const key = String(chapterOrStopId || '').trim();
-      const mappedOneBased = LEGACY_CHAPTER_TO_STOP_MAP[key];
-      if (mappedOneBased !== undefined) {
-        return museumUi.walkthrough.goToStop(mappedOneBased - 1, {
-          immediate,
-          reason: 'legacy_chapter',
-        });
-      }
-      return museumUi.walkthrough.goToStop(key, { immediate, reason: 'set_chapter' });
+    setChapter: async (stopIndexOrId, { immediate = false } = {}) => {
+      return museumUi.walkthrough.goToStop(stopIndexOrId, { immediate, reason: 'set_chapter' });
     },
 
     goToStop: (stopIndexOrId, opts = {}) => museumUi.walkthrough.goToStop(stopIndexOrId, opts),
@@ -748,7 +738,6 @@ async function initMuseumExhibition() {
     museumUi.exitLandingMode?.();
     const stopParam = bootParams.get('stop');
     const photoParam = bootParams.get('photo');
-    const chapterParam = bootParams.get('chapter');
     let bootStopIdx = 0;
     if (stopParam !== null && stopParam.trim() !== '') {
       const n = Number(stopParam);
@@ -761,9 +750,6 @@ async function initMuseumExhibition() {
         .getStops()
         .findIndex((s) => String(s.photoId) === cleanPid);
       if (foundIdx >= 0) bootStopIdx = foundIdx;
-    } else if (chapterParam !== null && chapterParam.trim() !== '') {
-      const mapped = LEGACY_CHAPTER_TO_STOP_MAP[chapterParam.trim()];
-      if (mapped !== undefined) bootStopIdx = Math.max(0, mapped - 1);
     }
     await museumUi.walkthrough.goToStop(bootStopIdx, { immediate: true, reason: 'boot' });
     const activeStop = museumUi.walkthrough.getActiveStop();
@@ -801,7 +787,7 @@ async function initMuseumExhibition() {
   // Prefetch upcoming plate quietly after first paint without bloating cold-boot Landing payload
   setTimeout(() => {
     if (startInLanding) {
-      portalSystem.prefetchPortal('55');
+      portalSystem.prefetchPortal('13');
     } else {
       const stops = museumUi.walkthrough.getStops();
       const activeIdx = museumUi.walkthrough.getStopIndex();

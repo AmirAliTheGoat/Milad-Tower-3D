@@ -1,15 +1,14 @@
 /**
  * Monochrome Collodion & Architectural Pen-and-Ink Materials + Foliage (`world/sketch_materials.js`)
  *
- * Synthesizes offline, deterministic procedural PBR textures and geometries grounded
- * in the measured 1887–1889 glass-plate palette (`#5`, `#8`):
- *   - `0` colored low-poly Paris materials (every material HSL saturation `<= 0.10`)
+ * Synthesizes offline, deterministic procedural PBR textures and geometries for Tehran & Gisha Hilltop:
+ *   - `0` oversaturated low-poly materials (all world materials monochrome / low-chroma)
  *   - `0` `emissive` / `emissiveMap` / unlit shaders
- *   - `512x512` crisp lithographic Haussmann & Exposition elevation maps (`map` + `normalMap` + `roughnessMap`)
- *   - `512x512` crushed-limestone esplanade gravel & dressed Château-Landon ashlar stone PBR maps
- *   - `256x256` ribbed standing-seam zinc/slate & oxidized dome cupola PBR maps
- *   - `256x256` tileable multi-wave Seine & basin ripple normal map
- *   - Multi-branched skeletal timber trees + porous alpha-tested silver-gelatin botanical foliage clusters
+ *   - `512x512` crisp architectural elevation maps (`map` + `normalMap` + `roughnessMap`)
+ *   - `512x512` crushed-limestone esplanade gravel & dressed ashlar stone PBR maps
+ *   - `256x256` ribbed standing-seam zinc/slate & oxidized dome PBR maps
+ *   - `256x256` tileable multi-wave reflecting-pool ripple normal map
+ *   - Multi-branched skeletal timber trees + porous alpha-tested botanical foliage clusters
  */
 
 import { attachWorldSketchAndMistShader } from './distance_fog.js';
@@ -33,11 +32,12 @@ export const PARIS_SKETCH_WORLD_PALETTE = Object.freeze({
   patinaDome: 0x777870,
   antiqueBronze: 0x948d80,
   basinWater: 0xaba8a1,
-  seineWater: 0xb7b4ae,
   collodionGlass: 0xcfd4d0,
   opalineGlobe: 0xebe6dc,
   sketchEdgeInk: 0x383531,
   sketchEdgeDistant: 0x7a756d,
+  alborzRock: 0x76726c,
+  alborzSnow: 0xebe8e2,
 });
 
 function hash2(x, y) {
@@ -881,7 +881,6 @@ export function createSketchWorldMaterials(THREE, mistUniforms, {
         repX: 2,
       });
 
-  const seineNormalMap = skipOverwrittenFloorMaps ? null : makeSeineWaterRippleNormalMap(THREE, 48, 5.4);
   const basinNormalMap = skipOverwrittenFloorMaps ? null : makeSeineWaterRippleNormalMap(THREE, 9, 9);
   const foliageMaps = rawWorldMaps?.foliage
     ? wrapBotanicalFoliageMaps(THREE, rawWorldMaps.foliage)
@@ -908,7 +907,6 @@ export function createSketchWorldMaterials(THREE, mistUniforms, {
   });
 
   return {
-    seineNormalMap,
     basinNormalMap,
     foliageDepthMaterial,
 
@@ -1141,19 +1139,6 @@ export function createSketchWorldMaterials(THREE, mistUniforms, {
       { hatchStrength: 0.0, contactAoStrength: 0.0, printGrainStrength: 0.008 }
     ),
 
-    seineWater: std(
-      'seineCollodionPBR',
-      P.seineWater,
-      0.16,
-      0.06,
-      {
-        envMapIntensity: 1.18,
-        normalMap: seineNormalMap,
-        normalScale: new THREE.Vector2(0.24, 0.24),
-      },
-      { hatchStrength: 0.0, contactAoStrength: 0.0, printGrainStrength: 0.008, isRiverWater: true }
-    ),
-
     glass: std(
       'world_collodion_glass',
       P.collodionGlass,
@@ -1198,6 +1183,24 @@ export function createSketchWorldMaterials(THREE, mistUniforms, {
       0.0,
       { envMapIntensity: 0.95 },
       { hatchStrength: 0.04, contactAoStrength: 0.0, printGrainStrength: 0.0 }
+    ),
+
+    alborzRock: std(
+      'world_alborz_rock',
+      P.alborzRock,
+      0.95,
+      0.0,
+      { flatShading: true },
+      { hatchStrength: 0.14, hatchScale: 1.4, contactAoStrength: 0.0, printGrainStrength: 0.016 }
+    ),
+
+    alborzSnow: std(
+      'world_alborz_snow',
+      P.alborzSnow,
+      0.86,
+      0.0,
+      { flatShading: true },
+      { hatchStrength: 0.06, hatchScale: 1.6, contactAoStrength: 0.0, printGrainStrength: 0.012 }
     ),
   };
 }
